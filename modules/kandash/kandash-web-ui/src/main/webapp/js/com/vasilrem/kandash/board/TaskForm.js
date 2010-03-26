@@ -26,9 +26,8 @@ const priorityCodes = ['Low', 'Medium', 'High']
 getTaskFormPanel = function(){
     return new Ext.form.FormPanel({
         baseCls: 'x-plain',
-        labelWidth: 100,
+        labelWidth: 95,
         defaultType: 'label',
-        autoScroll:true,
         items: [{
             fieldLabel: 'Summary',
             name: 'title',

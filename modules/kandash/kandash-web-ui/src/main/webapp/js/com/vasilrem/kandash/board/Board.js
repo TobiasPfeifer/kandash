@@ -128,11 +128,12 @@ com.vasilrem.kandash.board.Board = Ext.extend(Ext.Panel, {
             estimation: estimation,
             priority: priority,
             x: offsetLeft,
-            y: offsetTop,            
+            y: offsetTop,
             items: new com.vasilrem.kandash.board.TaskForm(taskName,
                 assignedTo,estimation,priority)
-        })
-        boardCell.doLayout()        
+        })        
+        boardCell.doLayout()
+        Ext.getCmp(taskId).el.dom.getElementsByClassName('x-panel-tc')[0].className='x-panel-tc-'+getPriorityById(priority).toLowerCase()
     }
 });
 

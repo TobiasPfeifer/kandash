@@ -40,14 +40,10 @@ Ext.onReady(function(){
     projectBoard.addProject('project3', 'Project 3')
 
     projectBoard.addTask('project1', 
-        'tier1',
-        'task1',
+        'tier1', 'task1',
         'Short task description (preferrable, not more than 140 symbol)',
         'John Smith',
-        5,
-        1,
-        20,
-        20)
+        5, 1, 20, 20)
 
 });
 

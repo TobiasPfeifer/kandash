@@ -9,6 +9,11 @@ body {
 	color:#fcfcfc;
 }
 
+label{
+
+	font-size:12px
+}
+
 .ext-el-mask {
     background-color: #ccc;
 }
@@ -1494,16 +1499,45 @@ a.x-menu-item {
 
 .x-panel-tl .x-panel-header {
     color:fff;
-	font:bold 14px tahoma,arial,verdana,sans-serif;
+	font:bold 12px tahoma,arial,verdana,sans-serif;
 }
 
 .x-panel-tc {
 	background-image: url(../images/access/panel/top-bottom.gif);
 }
 
+.x-panel-tc-high {
+	background-image: url(../images/access/panel/top-bottom-high.gif);
+}
+
+.x-panel-tc-medium {
+	background-image: url(../images/access/panel/top-bottom-medium.gif);
+}
+
+.x-panel-tc-low {
+	background-image: url(../images/access/panel/top-bottom-low.gif);
+}
+
 .x-panel-tl, .x-panel-tr, .x-panel-bl,  .x-panel-br{
 	background-image: url(../images/access/panel/corners-sprite.gif);
     border-bottom-color:#222224;
+}
+
+.x-panel-tl-red{
+    background-image: url(../images/access/panel/corners-sprite-red.gif);
+border-bottom-color:#222224;
+}
+
+.x-panel-tl-yellow{
+    background-image: url(../images/access/panel/corners-sprite-yellow.gif);
+border-bottom-color:#222224;
+
+}
+
+.x-panel-tl-green{
+    background-image: url(../images/access/panel/corners-sprite-green.gif);
+border-bottom-color:#222224;
+
 }
 
 .x-panel-bc {

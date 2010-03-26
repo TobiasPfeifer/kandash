@@ -93,9 +93,9 @@ var dialogTaskForm = new Ext.form.FormPanel({
 var updateTaskDialog = new Ext.Window({
     title: 'Task',
     width: 300,
-    height:200,
+    height:250,
     minWidth: 300,
-    minHeight: 200,
+    minHeight: 250,
     layout: 'fit',
     plain:true,
     bodyStyle:'padding:5px;',

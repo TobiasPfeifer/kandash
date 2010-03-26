@@ -4,8 +4,7 @@
 com.vasilrem.kandash.board.Task = Ext.extend(Ext.Panel, {
     frame : true,
     collapsible : true,
-    width:250,
-    height: 150,
+    width:300,
     autoScroll:true,
     layout: 'fit',
     tools: [{
@@ -63,6 +62,11 @@ com.vasilrem.kandash.board.Task = Ext.extend(Ext.Panel, {
 
     setFormPriority: function(priority){
         this.getForm().items.items[3].update(getPriorityById(priority))
+        this.el.dom.getElementsByClassName(
+            'x-panel-tc-'+
+            getPriorityById(this.priority).toLowerCase()
+            )[0].className=
+        'x-panel-tc-'+getPriorityById(priority).toLowerCase()
         this.priority = priority
     }
 
