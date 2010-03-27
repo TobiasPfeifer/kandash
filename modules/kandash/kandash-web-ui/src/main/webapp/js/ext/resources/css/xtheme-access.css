@@ -11,7 +11,7 @@ body {
 
 label{
 
-	font-size:12px
+	font-size:11px
 }
 
 .ext-el-mask {
@@ -1499,7 +1499,7 @@ a.x-menu-item {
 
 .x-panel-tl .x-panel-header {
     color:fff;
-	font:bold 12px tahoma,arial,verdana,sans-serif;
+	font:bold 11px tahoma,arial,verdana,sans-serif;
 }
 
 .x-panel-tc {

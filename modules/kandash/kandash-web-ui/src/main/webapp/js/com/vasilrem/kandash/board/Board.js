@@ -96,11 +96,13 @@ com.vasilrem.kandash.board.Board = Ext.extend(Ext.Panel, {
      * Adds a new tier to the board
      * @param id tier ideantifier
      * @param name tier name
+     * @param isDeletable defines if the tier can be deleted fom the board
      */
-    addTier: function(id, name){
+    addTier: function(id, name, isDeletable){
         this.tiers[this.tiers.length] = {
             'id': id,
-            'name': name
+            'name': name,
+            'isDeletable': isDeletable
         }
     },
 
@@ -134,6 +136,26 @@ com.vasilrem.kandash.board.Board = Ext.extend(Ext.Panel, {
         })        
         boardCell.doLayout()
         Ext.getCmp(taskId).el.dom.getElementsByClassName('x-panel-tc')[0].className='x-panel-tc-'+getPriorityById(priority).toLowerCase()
+    },
+
+    /**
+     * Updates the tier across all projects on the board
+     * @param tierId identifier of the tire to be updated
+     * @param tierName tier name
+     */
+    updateTier: function(tierId, tierName){
+        var projects = this.getProjects()
+        for(project in projects){
+            var projectTierCell = this.boardGrid[project][tierId]
+            if(projectTierCell){
+                projectTierCell.setTitle(tierName)
+            }
+        }
+        for(var i =0; i<this.tiers.length; i++){
+            if(this.tiers[i].id == tierId){
+                this.tiers[i].name = tierName
+            }
+        }
     }
 });
 

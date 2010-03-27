@@ -17,8 +17,19 @@ com.vasilrem.kandash.board.Task = Ext.extend(Ext.Panel, {
     },{
         id: 'close',
         qtip: 'Delete',
-        handler: function(event, toolEl, panel){
-
+        handler: function(event, toolEl, task){
+            Ext.Msg.show({
+                title:'Delete task?',
+                msg: 'Are you sure, you want to delete this task?',
+                buttons: Ext.Msg.YESNO,
+                fn: function(btn){
+                    if(btn == 'yes'){
+                        var cell = task.ownerCt
+                        cell.remove(task)
+                    }
+                },
+                animEl: 'elId'
+            });
         }
     }],
 

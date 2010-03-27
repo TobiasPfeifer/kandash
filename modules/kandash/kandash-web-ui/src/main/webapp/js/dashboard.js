@@ -31,9 +31,10 @@ Ext.onReady(function(){
   
     var projectBoard = Ext.getCmp('projectboard')
 
-    projectBoard.addTier('tier3', 'Done')
-    projectBoard.addTier('tier2', 'In Progress')
-    projectBoard.addTier('tier1', 'TO-DO')
+    // default tiers!!! should always present
+    projectBoard.addTier('tier3', 'Done', false)
+    projectBoard.addTier('tier2', 'In Progress', false)
+    projectBoard.addTier('tier1', 'TO-DO', false)
 
     projectBoard.addProject('project1', 'Project 1')
     projectBoard.addProject('project2', 'Project 2')
