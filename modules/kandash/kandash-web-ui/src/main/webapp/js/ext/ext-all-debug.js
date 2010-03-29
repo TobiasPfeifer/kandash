@@ -20484,6 +20484,7 @@ Ext.layout.BorderLayout.Region.prototype = {
 
     // private
     beforeExpand : function(animate){
+	
         if(this.isSlid){
             this.afterSlideIn();
         }
@@ -20501,6 +20502,7 @@ Ext.layout.BorderLayout.Region.prototype = {
 
     // private
     onExpand : function(){
+	
         this.isCollapsed = false;
         if(this.splitEl){
             this.splitEl.show();
@@ -21554,6 +21556,7 @@ Ext.layout.AccordionLayout = Ext.extend(Ext.layout.FitLayout, {
 
     // private
     beforeExpand : function(p, anim){
+	
         var ai = this.activeItem;
         if(ai){
             if(this.sequence){
@@ -24211,6 +24214,7 @@ new Ext.Panel({
      * @return {Ext.Panel} this
      */
     expand : function(animate){
+	
         if(!this.collapsed || this.el.hasFxBlock() || this.fireEvent('beforeexpand', this, animate) === false){
             return;
         }
@@ -24223,6 +24227,7 @@ new Ext.Panel({
 
     // private
     onExpand : function(doAnim, animArg){
+	
         if(doAnim){
             this[this.collapseEl].slideIn(this.slideAnchor,
                     Ext.apply(this.createEffect(animArg||true, this.afterExpand, this),
@@ -24235,6 +24240,7 @@ new Ext.Panel({
 
     // private
     afterExpand : function(anim){
+	
         this.collapsed = false;
         this.afterEffect(anim);
         if (this.deferLayout) {
@@ -48049,6 +48055,7 @@ new Ext.tree.TreePanel({
 
     // private
     restrictExpand : function(node){
+	
         var p = node.parentNode;
         if(p){
             if(p.expandedChild && p.expandedChild.parentNode == p){
@@ -50071,6 +50078,7 @@ Ext.extend(Ext.tree.TreeNode, Ext.data.Node, {
      * @param {Object} scope (optional) The scope (<code>this</code> reference) in which the callback is executed. Defaults to this TreeNode.
      */
     expand : function(deep, anim, callback, scope){
+	
         if(!this.expanded){
             if(this.fireEvent('beforeexpand', this, deep, anim) === false){
                 return;

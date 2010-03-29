@@ -1523,18 +1523,18 @@ a.x-menu-item {
     border-bottom-color:#222224;
 }
 
-.x-panel-tl-red{
+.x-panel-tl-high{
     background-image: url(../images/access/panel/corners-sprite-red.gif);
 border-bottom-color:#222224;
 }
 
-.x-panel-tl-yellow{
+.x-panel-tl-medium{
     background-image: url(../images/access/panel/corners-sprite-yellow.gif);
 border-bottom-color:#222224;
 
 }
 
-.x-panel-tl-green{
+.x-panel-tl-low{
     background-image: url(../images/access/panel/corners-sprite-green.gif);
 border-bottom-color:#222224;
 

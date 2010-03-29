@@ -29,9 +29,23 @@ com.vasilrem.kandash.board.Tier = Ext.extend(Ext.Panel, {
     },{
         id: 'close',
         qtip: 'Delete',
-        handler: function(event, toolEl, tier){
-            if(!tier.isDeletable){
+        handler: function(event, toolEl, tierCell){
+            if(!tierCell.isDeletable){
                 Ext.Msg.alert('This tier can not be deleted!', 'Default tier can not be deleted!');
+            }else{
+                Ext.Msg.show({
+                    title:'Delete tier?',
+                    msg: 'Are you sure, you want to delete this tier? All tasks will be lost!',
+                    buttons: Ext.Msg.YESNO,
+                    fn: function(btn){
+                        if(btn == 'yes'){
+                            var tierId = tierCell.id.substr(
+                                tierCell.id.indexOf('_') + 1, tierCell.id.length)
+                            Ext.getCmp('projectboard').removeTier(tierId)
+                        }
+                    },
+                    animEl: 'elId'
+                });
             }
         }
     }]

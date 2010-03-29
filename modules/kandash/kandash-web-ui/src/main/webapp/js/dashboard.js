@@ -7,25 +7,35 @@ Ext.onReady(function(){
         items:[{
             region: 'north',
             layout:'fit',
+            id: 'boardbar',
             tbar: [{
                 text: 'Add Task',
-                iconCls: 'add16',
+                iconCls: '',
                 handler: function(){
                     showTaskDialog(true)
                 }
             },{
                 text: 'Add Project',
-                iconCls: 'add16',
+                iconCls: '',
                 handler: function(){
                     createProjectDialog.show()
                 }
             },{
                 text: 'Add Tier',
-                iconCls: 'add16'
+                iconCls: '',
+                handler: function(){
+                    showAddTierDialog()
+                }
             }]
         },{
             xtype:'kandash.board',
             region: 'center'
+        },{
+            id: 'projectbar',
+            region: 'south',
+            layout:'fit',
+            height:30,
+            tbar: []
         }]
     });
   

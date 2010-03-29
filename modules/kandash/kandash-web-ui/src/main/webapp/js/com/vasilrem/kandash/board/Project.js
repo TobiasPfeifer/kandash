@@ -5,6 +5,14 @@ com.vasilrem.kandash.board.Project = Ext.extend(Ext.Panel, {
     layout:'anchor',
     bodyStyle:'border:none',
     tools: [{
+        id: 'minimize',
+        qtip: 'Minimize to toolbar',
+        handler: function(event, toolEl, project){
+            project.hide()
+            project.ownerCt.resizeProjectColumns()
+            project.addToProjectBar()
+        }
+    },{
         id: 'gear',
         qtip: 'Update',
         /**
@@ -45,17 +53,60 @@ com.vasilrem.kandash.board.Project = Ext.extend(Ext.Panel, {
                 fn: function(btn){
                     if(btn == 'yes'){
                         var board = project.ownerCt
-                        board.remove(project)
-                        for(var i=0;i<board.items.length; i++){
-                            board.items.items[i].columnWidth = 1/board.items.length
-                        }
-                        board.doLayout()
+                        board.removeProject(project)
                     }
                 },
                 animEl: 'elId'
             });
         }
-    }]        
+    }],
+
+    /**
+     * Inserts tier to the project pane at specified position
+     * @param tierId tier identifier
+     * @param tierName tier name
+     * @param position tier position on the board ('0' - last tier)
+     * @return instance of a new tier added to the project
+     */
+    insertTier: function(tierId, tierName, position){
+        return this.insert(position, {
+            xtype: 'kandash.tier',
+            id: tierId,
+            title: tierName,
+            isDeletable: true,
+            height:100
+        })
+    },
+
+    /**
+     * Removes tier form the project
+     * @param tierId identifier of the tier to be removed
+     **/
+    removeTier: function(tierId){
+        var tierCell = Ext.getCmp(this.id + '_' + tierId)
+        if(tierCell){
+            this.remove(tierCell)
+        }
+    },
+
+    /**
+     * Adds project shrtcut to the project bar
+     */
+    addToProjectBar: function(){        
+        var project = this
+        var projectBar = Ext.getCmp('projectbar').getTopToolbar()
+        projectBar.add({
+            text: project.title,
+            iconCls: '',
+            handler: function(){
+                project.show()
+                project.ownerCt.resizeProjectColumns()
+                project.ownerCt.updateTiersHeight(null, null, null, project.id)
+                this.ownerCt.remove(this)
+            }
+        })
+        projectBar.ownerCt.doLayout()
+    }
 });
 
 Ext.reg('kandash.project', com.vasilrem.kandash.board.Project);
