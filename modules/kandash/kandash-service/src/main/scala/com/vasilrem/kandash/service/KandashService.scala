@@ -8,8 +8,9 @@ package com.vasilrem.kandash.service
 import com.eltimn.scamongo._;
 import com.vasilrem.kandash.model._;
 import net.liftweb.json.JsonDSL._
+import net.liftweb.json.JsonAST._
 import net.liftweb.json._
-import com.mongodb.ObjectId
+import com.mongodb._
 
 /**
  * Represents high-level server-sede routing of the board
@@ -61,83 +62,67 @@ trait KandashService extends JObjectBuilder{
   def getDashboardByName(name:String):DashboardModel = DashboardModel.find("name", name).get
 
   /**
-   * Adds new project to the board
-   * @val boardId identifier of the board the project will be added to
-   * @val project project to be added
-   * @return project identifier
+   * Adds a new element to the board
+   * @val boardId identifier of the board the element will be added to
+   * @val document element to be added
+   * @return element identifier
    */
-  def createProject(boardId: String, project: Workflow): String = {
-    val projectId = ObjectId.get.toString
+  def add[A](boardId: String, document: MongoDocument[A]): String = {
+    val documentId = ObjectId.get.toString
     DashboardModel.update(("_id" -> boardId),
-                          ("$push" -> ("workflows" -> buildQuery(projectId, project))
+                          ("$push" -> (document.meta.collectionName -> buildQuery(documentId, document))
       ))
-    projectId
+    documentId
   }
 
   /**
-   * Adds new tier to the model
-   * @val boardId identifier of the board the tier will be added to
-   * @val tier tier to be added to the board
-   * @return tier identifier
+   * Updates board element
+   * @val document board element
    */
-  def addTier(boardId: String, tier: Tier): String = {
-    val tierId = ObjectId.get.toString
+  def update[A](document: MongoDocument[A]): String = {
+    val collectionName = document.meta.collectionName
+    val documentId = getDocumentIdentifier(document)
+    DashboardModel.update((collectionName + "._id" -> documentId),
+                          ("$set" -> (collectionName + ".$" -> buildQuery(documentId, document))
+      ))
+    documentId
+  }
+
+  /**
+   * Removes element from the board
+   * @val documentId element identifier
+   * @val collectionName name of the element's collection'
+   */
+  def remove(documentId: String, collectionName: String): Unit = {
+    val boardId = DashboardModel.find((collectionName + "._id" -> documentId)).get._id
+    println("Element is up to be removed from " + boardId)
+    // Workaround to remove element from collection. $unset shouldn't be used,
+    // because it replaces removed elements with nulls, that cannot be be pull out
+    // of the list
+    DashboardModel.update((collectionName + "._id" -> documentId),
+                          ("$set" -> (collectionName + ".$" -> "null")
+      ))
     DashboardModel.update(("_id" -> boardId),
-                          ("$push" -> ("tiers" -> buildQuery(tierId, tier))
+                          ("$pull" -> (collectionName -> "null")
       ))
-    tierId
   }
 
   /**
-   * Adds new task to the board
-   * @val boardId identifier of the board the tier will be added to
-   * @val task task to be added to the board
-   * @return task identifier
+   * Removes element from the board
+   * @val document element to be removed
    */
-  def addTask(boardId: String, task: Task): String = {
-    val taskId = ObjectId.get.toString
-    DashboardModel.update(("_id" -> boardId),
-                          ("$push" -> ("tasks" -> buildQuery(taskId, task))
-      ))
-    taskId
-  }
+  def remove[A](document: MongoDocument[A]): Unit =
+    remove(getDocumentIdentifier(document), document.meta.collectionName)
 
   /**
-   * Updates tier of the board
-   * @val tier must contain identifier of the tier that should be updated
-   * @return identifier of the updated tier
+   * Gets document identifier (value of "_id" field)
+   * @val document any element that can present on the board (task, project, tier)
    */
-  def updateTier(tier: Tier): String = {
-    DashboardModel.update(("tiers._id" -> tier._id),
-                          ("$set" -> ("tiers.$" -> buildQuery(tier._id, tier))
-      ))
-    tier._id
+  def getDocumentIdentifier(document: AnyRef): String = {
+    val idField = document.getClass.getDeclaredField("_id")
+    idField.setAccessible(true)
+    idField.get(document).toString
   }
-
-  /**
-   * Updates workflow of the board
-   * @val workflow must contain identifier of the workflow that should be updated
-   * @return identifier of the updated workflow
-   */
-  def updateWorkflow(workflow: Workflow): String = {
-    DashboardModel.update(("workflows._id" -> workflow._id),
-                          ("$set" -> ("workflows.$" -> buildQuery(workflow._id, workflow))
-      ))
-    workflow._id
-  }
-
-  /**
-   * Updates task of the board
-   * @val task must contain identifier of the task that should be updated
-   * @return identifier of the updated task
-   */
-  def updateTask(task: Task): String = {
-    DashboardModel.update(("tasks._id" -> task._id),
-                          ("$set" -> ("tasks.$" -> buildQuery(task._id, task))
-      ))
-    task._id
-  }
-
 
 }
 

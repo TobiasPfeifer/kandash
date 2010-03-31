@@ -17,7 +17,7 @@ class IdeaServiceSpecTest extends SpecificationWithJUnit {
   }
 
   /**
-   * Performs deep comparisonn of two objects. If value of any field differs for
+   * Performs deep comparison of two objects. If value of any field differs for
    * the objects, AssertionException is thrown
    */
   def deepCompare(value1: Object, value2: Object) = {
@@ -32,12 +32,14 @@ class IdeaServiceSpecTest extends SpecificationWithJUnit {
     }
   }
 
-  "Create new board" in{
-    println("\r\n\r\n=====Create new board======")
-    val validID = kandashService.createNewDashboard("testDashboard")
-    println("""New dashboard "testDashboard" has been created with ID """ + validID)
-    validID must notBeNull
-  }
+  def sampleTask =
+
+    "Create new board" in{
+      println("\r\n\r\n=====Create new board======")
+      val validID = kandashService.createNewDashboard("testDashboard")
+      println("""New dashboard "testDashboard" has been created with ID """ + validID)
+      validID must notBeNull
+    }
 
   "Fatch board by ID" in{
     println("\r\n\r\n=====Fatch board by ID======")
@@ -51,7 +53,7 @@ class IdeaServiceSpecTest extends SpecificationWithJUnit {
     println("\r\n\r\n=====Add new project to the board======")
     val boardId = kandashService.createNewDashboard("testDashboard")
     println("Updating dashboard " + boardId)
-    val projectId = kandashService.createProject(boardId, new Workflow(null, "testProject1"))
+    val projectId = kandashService.add[Workflow](boardId, new Workflow(null, "testProject1"))
     println("Added project " + projectId)
     kandashService.getDashboardById(boardId).workflows.length must beEqualTo(2)
   }
@@ -60,7 +62,7 @@ class IdeaServiceSpecTest extends SpecificationWithJUnit {
     println("\r\n\r\n=====Add new tier to the board======")
     val boardId = kandashService.createNewDashboard("testDashboard")
     println("Adding tier to board " + boardId)
-    println("Added new tier " + kandashService.addTier(boardId, new Tier(null, "Test Tier", 2, new Some(2))))
+    println("Added new tier " + kandashService.add[Tier](boardId, new Tier(null, "Test Tier", 2, new Some(2))))
     kandashService.getDashboardById(boardId).tiers.length must beEqualTo(4)
   }
 
@@ -70,18 +72,18 @@ class IdeaServiceSpecTest extends SpecificationWithJUnit {
     val dashboard = kandashService.getDashboardById(boardId)
     println("Adding tasks to " + dashboard)
     println("Added new task " +
-            kandashService.addTask(boardId,
-                                   new Task(null,
-                                            new Some("unknown"),
-                                            "Test Task",
-                                            new Some(5),
-                                            new Some("unknown"),
-                                            50,
-                                            50,
-                                            new Some(100),
-                                            1,
-                                            dashboard.tiers.last._id,
-                                            dashboard.workflows.last._id)))
+            kandashService.add[Task](boardId,
+                                     new Task(null,
+                                              new Some("unknown"),
+                                              "Test Task",
+                                              new Some(5),
+                                              new Some("unknown"),
+                                              50,
+                                              50,
+                                              new Some(100),
+                                              1,
+                                              dashboard.tiers.last._id,
+                                              dashboard.workflows.last._id)))
     val resultingDashboard = kandashService.getDashboardById(boardId)
     println("Resulting dashboard: " + resultingDashboard)
     resultingDashboard.tasks.length must beEqualTo(1)
@@ -94,7 +96,7 @@ class IdeaServiceSpecTest extends SpecificationWithJUnit {
     val tier = dashboard.tiers.last
     val updatedTier = new Tier(tier._id, "updated!", tier.order, tier.wipLimit)
     println("Updating " + updatedTier + " at " + dashboard)
-    kandashService.updateTier(updatedTier)
+    kandashService.update[Tier](updatedTier)
     val resultingBoard = kandashService.getDashboardById(boardId)
     println("Resulting board: " + resultingBoard)
     resultingBoard.tiers.foreach {
@@ -112,7 +114,7 @@ class IdeaServiceSpecTest extends SpecificationWithJUnit {
     val workflow = dashboard.workflows.last
     val updatedWorkflow = new Workflow(workflow._id, "updated!")
     println("Updating " + updatedWorkflow + " at " + dashboard)
-    kandashService.updateWorkflow(updatedWorkflow)
+    kandashService.update[Workflow](updatedWorkflow)
     val resultingBoard = kandashService.getDashboardById(boardId)
     println("Resulting board: " + resultingBoard)
     resultingBoard.workflows.foreach {
@@ -127,18 +129,18 @@ class IdeaServiceSpecTest extends SpecificationWithJUnit {
     println("\r\n\r\n=====Update task on the board======")
     val boardId = kandashService.createNewDashboard("testDashboard")
     val dashboard = kandashService.getDashboardById(boardId)
-    val taskId = kandashService.addTask(boardId,
-                                        new Task(null,
-                                                 new Some("unknown"),
-                                                 "Test Task",
-                                                 new Some(5),
-                                                 new Some("unknown"),
-                                                 50,
-                                                 50,
-                                                 new Some(100),
-                                                 1,
-                                                 dashboard.tiers.last._id,
-                                                 dashboard.workflows.last._id))
+    val taskId = kandashService.add[Task](boardId,
+                                          new Task(null,
+                                                   new Some("unknown"),
+                                                   "Test Task",
+                                                   new Some(5),
+                                                   new Some("unknown"),
+                                                   50,
+                                                   50,
+                                                   new Some(100),
+                                                   1,
+                                                   dashboard.tiers.last._id,
+                                                   dashboard.workflows.last._id))
     val updatedTask =  new Task(taskId,
                                 new Some("unknown"),
                                 "Updated task!!!",
@@ -151,7 +153,7 @@ class IdeaServiceSpecTest extends SpecificationWithJUnit {
                                 dashboard.tiers.last._id,
                                 dashboard.workflows.last._id)
     println("Updating " + updatedTask + " at " + dashboard)
-    kandashService.updateTask(updatedTask)
+    kandashService.update[Task](updatedTask)
     val resultingBoard = kandashService.getDashboardById(boardId)
     println("Resulting board: " + resultingBoard)
     resultingBoard.tasks.foreach {
@@ -164,14 +166,48 @@ class IdeaServiceSpecTest extends SpecificationWithJUnit {
 
   "Remove tier from the board" in {
     println("\r\n\r\n=====Remove tier from the board======")
+    val boardId = kandashService.createNewDashboard("testDashboard")
+    val dashboard = kandashService.getDashboardById(boardId)
+    val tierId = dashboard.tiers.last._id
+    println("Removing tier " + tierId + " from " + boardId)
+    kandashService.remove(tierId, Tier.collectionName)    
+    val resultingBoard = kandashService.getDashboardById(boardId)
+    kandashService.getDashboardById(boardId).tiers.length must beEqualTo(2)
   }
 
   "Remove project from the board" in {
     println("\r\n\r\n=====Remove project from the board======")
+    val boardId = kandashService.createNewDashboard("testDashboard")
+    val dashboard = kandashService.getDashboardById(boardId)
+    val workflowId = dashboard.workflows.last._id
+    println("Removing project " + workflowId + " from " + boardId)
+    kandashService.remove(workflowId, Workflow.collectionName)    
+    val resultingBoard = kandashService.getDashboardById(boardId)
+    kandashService.getDashboardById(boardId).workflows.length must beEqualTo(0)
   }
 
   "Remove task on the board" in {
     println("\r\n\r\n=====Remove task on the board======")
+    val boardId = kandashService.createNewDashboard("testDashboard")
+    val dashboard = kandashService.getDashboardById(boardId)
+    val taskId = kandashService.add[Task](boardId,
+                                          new Task(null,
+                                                   new Some("unknown"),
+                                                   "Test Task",
+                                                   new Some(5),
+                                                   new Some("unknown"),
+                                                   50,
+                                                   50,
+                                                   new Some(100),
+                                                   1,
+                                                   dashboard.tiers.last._id,
+                                                   dashboard.workflows.last._id))
+    println("Removing task " + taskId + " from " + boardId)
+    kandashService.remove(taskId, Task.collectionName)    
+    val resultingBoard = kandashService.getDashboardById(boardId)    
+    kandashService.getDashboardById(boardId).tasks.length must beEqualTo(0)
+
   }
 
 }
+
