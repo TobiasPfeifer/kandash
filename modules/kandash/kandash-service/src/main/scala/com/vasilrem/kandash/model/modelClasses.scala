@@ -37,6 +37,8 @@ object Workflow extends MongoDocumentMeta[Workflow] {
  */
 case class User(_id:String, name:String) extends MongoDocument[User]{
   def meta = User
+
+  def this(name: String) = this(null, name)
 }
 object User extends MongoDocumentMeta[User] {
   override def mongoIdentifier = DefaultMongoIdentifier
@@ -65,11 +67,11 @@ object TaskPriority extends Enumeration {
 /**
  * Task is an atomic piece of job to be done by team-member
  */
-case class Task(_id:String, assignee:Option[User], description:String, estimation:Option[Int],
-                estimationType:Option[EstimationType], offsetLeft:Int, offsetTop:Int,
-                percentCompleted:Option[Double], priority:Int,
-                tier:Tier, workflow:Workflow) extends MongoDocument[Task]{
-  def meta = Task
+case class Task(_id:String, assigneeId:Option[String], description:String, estimation:Option[Int],
+                estimationTypeId:Option[String], offsetLeft:Int, offsetTop:Int,
+                percentCompleted:Option[Int], priority:Int,
+                tierId:String, workflowId:String) extends MongoDocument[Task]{
+  def meta = Task  
 }
 object Task extends MongoDocumentMeta[Task] {
   override def mongoIdentifier = DefaultMongoIdentifier
@@ -94,7 +96,7 @@ object TaskUpdateFact extends MongoDocumentMeta[TaskUpdateFact] {
  * UI: rows and columns of the board, tasks and their locations, etc.
  */
 case class DashboardModel(_id:String, name:String, tiers:List[Tier], workflows:List[Workflow],
-                          tasks:Option[List[Task]]) extends MongoDocument[DashboardModel]{
+                          tasks:List[Task]) extends MongoDocument[DashboardModel]{
   def meta = DashboardModel
 }
 object DashboardModel extends MongoDocumentMeta[DashboardModel] {
