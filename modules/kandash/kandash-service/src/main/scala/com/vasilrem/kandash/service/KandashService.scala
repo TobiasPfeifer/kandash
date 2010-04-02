@@ -78,6 +78,7 @@ trait KandashService extends JObjectBuilder{
   /**
    * Updates board element
    * @val document board element
+   * @return element identifier
    */
   def update[A](document: MongoDocument[A]): String = {
     val collectionName = document.meta.collectionName

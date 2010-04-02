@@ -7,11 +7,13 @@ package com.vasilrem.kandash.model
 
 import com.eltimn.scamongo._
 import java.util.Date
+import scala.reflect.BeanInfo
 
 /**
  * Tier represents standardized state of task per workflow (started, in
  * progress, finished, etc.)
  */
+@BeanInfo
 case class Tier(_id:String, name:String, order:Int, wipLimit:Option[Int]) extends MongoDocument[Tier]{
   def meta = Tier
 }
@@ -24,6 +26,7 @@ object Tier extends MongoDocumentMeta[Tier] {
  * Workflow is the table column. Represents project of activity that team-members
  * are committed to
  */
+@BeanInfo
 case class Workflow(_id:String, name:String) extends MongoDocument[Workflow]{
   def meta = Workflow
 }
@@ -67,6 +70,7 @@ object TaskPriority extends Enumeration {
 /**
  * Task is an atomic piece of job to be done by team-member
  */
+@BeanInfo
 case class Task(_id:String, assigneeId:Option[String], description:String, estimation:Option[Int],
                 estimationTypeId:Option[String], offsetLeft:Int, offsetTop:Int,
                 percentCompleted:Option[Int], priority:Int,
@@ -95,6 +99,7 @@ object TaskUpdateFact extends MongoDocumentMeta[TaskUpdateFact] {
  * DashboardModel contains all information to display dashboard consistently on
  * UI: rows and columns of the board, tasks and their locations, etc.
  */
+@BeanInfo
 case class DashboardModel(_id:String, name:String, tiers:List[Tier], workflows:List[Workflow],
                           tasks:List[Task]) extends MongoDocument[DashboardModel]{
   def meta = DashboardModel
