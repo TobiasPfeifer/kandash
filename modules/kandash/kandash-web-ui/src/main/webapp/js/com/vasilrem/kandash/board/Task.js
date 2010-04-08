@@ -26,6 +26,7 @@ com.vasilrem.kandash.board.Task = Ext.extend(Ext.Panel, {
                     if(btn == 'yes'){
                         var cell = task.ownerCt
                         cell.remove(task)
+                        DELETE(RESOURCES + RS_TASK + '/' + task.id)
                     }
                 },
                 animEl: 'elId'
@@ -79,6 +80,24 @@ com.vasilrem.kandash.board.Task = Ext.extend(Ext.Panel, {
             )[0].className=
         'x-panel-tc-'+getPriorityById(priority).toLowerCase()
         this.priority = priority
+    },
+
+    /**
+     * Converts task to lightweight JSON object
+     */
+    toJSON: function(){
+        return {
+            '_id': this.id,
+            'assigneeId': this.assignedTo, // TO CHANGE: assignee name should be replaced with assignee ID
+            'description': this.title,
+            'estimation': this.estimation,
+            'offsetLeft': this.x, // TO CHANGE: relative offset left
+            'offsetTop': this.y, // TO CHANGE: relative offset top
+            'priority': this.priority,
+            'tierId': this.ownerCt.id.substr(
+                this.ownerCt.id.indexOf('_') + 1, this.ownerCt.id.length),
+            'workflowId': this.ownerCt.ownerCt.id
+        }
     }
 
 });
@@ -109,15 +128,25 @@ com.vasilrem.kandash.board.Task.DropZone = Ext.extend(Ext.dd.DDProxy, {
         if(!this.invalidDrop){
             var dragEl = Ext.get(this.getDragEl());
             var el = Ext.get(this.getEl());
+            var task = Ext.getCmp(el.id)
             if(this.lastTarget) {
-                Ext.getCmp(this.lastTarget.id).add(Ext.getCmp(el.id))
+                Ext.getCmp(this.lastTarget.id).add(task)
                 Ext.getCmp(this.lastTarget.id).doLayout()
             }
             el.applyStyles({
                 position:'absolute'
             });
+            task.x += dragEl.getXY()[0] - el.getXY()[0]
+            task.y += dragEl.getXY()[1] - el.getXY()[1]
+            if(task.x < 0){
+                task.x = 0
+            }
+            if(task.y < 0){
+                task.y = 0
+            }
             el.setXY(dragEl.getXY());
             el.setWidth(dragEl.getWidth());
+            PUT(RESOURCES + RS_TASK, task.toJSON())
             this.lastTarget = null;
         }else{
             this.invalidDrop = false

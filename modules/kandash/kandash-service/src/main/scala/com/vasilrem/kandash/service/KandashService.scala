@@ -62,6 +62,12 @@ trait KandashService extends JObjectBuilder{
   def getDashboardByName(name:String):DashboardModel = DashboardModel.find("name", name).get
 
   /**
+   * Gets list of dashboards from backend (only id's and names are filled)
+   * @return list of boards
+   */
+  def getDashboards: List[DashboardModel] = DashboardModel.findAll
+
+  /**
    * Adds a new element to the board
    * @val boardId identifier of the board the element will be added to
    * @val document element to be added

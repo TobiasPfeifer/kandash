@@ -34,7 +34,7 @@ class TaskResource {
    * @val in HTTP input stream conveterted to array
    * @return task identifier
    */
-  @POST @Path("/{boardId}/task") @Consumes(Array("application/json"))
+  @POST @Path("/{boardId}") 
   def createTask(@PathParam("boardId") boardId:String,
                  @Context headers: HttpHeaders, in: Array[Byte]): String = {
     log.info("Create new task")
@@ -47,7 +47,7 @@ class TaskResource {
    * @val headers HTTP headers
    * @val in HTTP input stream conveterted to array
    */
-  @PUT @Consumes(Array("application/json"))
+  @PUT 
   def updateTask(@Context headers: HttpHeaders, in: Array[Byte]) = {
     log.info("Update task")
     KandashServiceInstance.update[Task](

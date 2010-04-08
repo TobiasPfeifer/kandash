@@ -111,18 +111,18 @@ var updateTaskDialog = new Ext.Window({
             var assignedTo = form.getAssignee()
             var estimation = form.getEstimation()
             var priority = form.getPriority()
-            var board = Ext.getCmp('projectboard')
+            var board = getBoard()
             if(this.ownerCt.ownerCt.taskId){
                 var task = Ext.getCmp(this.ownerCt.ownerCt.taskId)
                 task.setFormTitle(description)
                 task.setFormAssignedTo(assignedTo)
                 task.setFormEstimation(estimation)
                 task.setFormPriority(priority)
+                PUT(RESOURCES + RS_TASK, task.toJSON())
             }else{
                 var projectId = form.getProject()
-                board.addTask(projectId,
+                board.addTask(null, projectId,
                     board.tiers[board.tiers.length-1].id,
-                    description.replace(' ',''),
                     description, assignedTo, estimation,
                     priority, 20, 20)
             }
@@ -137,7 +137,7 @@ var updateTaskDialog = new Ext.Window({
 });
 
 function showTaskDialog(isCreateDialog, taskId, description, assignedTo, estimation, priority){
-    var projects = Ext.getCmp('projectboard').getProjects()
+    var projects = getBoard().getProjects()
     dialogTaskForm.setSubject(description)
     dialogTaskForm.setAssignee(assignedTo)
     dialogTaskForm.setEstimation(estimation)
@@ -153,7 +153,7 @@ function showTaskDialog(isCreateDialog, taskId, description, assignedTo, estimat
             })
         }
         for(project in projects){
-            if(project!='remove')
+            if(projects[project].id)
                 dialogTaskForm.items.items[0].store.add(
                     new Ext.data.Record({
                         'taskProjectId': project,

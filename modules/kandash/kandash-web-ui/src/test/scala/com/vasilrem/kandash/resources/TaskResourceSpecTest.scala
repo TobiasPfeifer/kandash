@@ -50,7 +50,7 @@ class TaskResourceSpecTest extends SpecificationWithJUnit {
                                              "dashboard.tiers.last._id",
                                              "dashboard.workflows.last._id")
 
-  "Create task" in {
+  "Create task" in {    
     taskResource.createTask(boardId,
                             null,
                             Serialization.write(testTask).getBytes) must notBeNull

@@ -34,7 +34,7 @@ class ProjectResource {
    * @val in HTTP input stream conveterted to array
    * @return project identifier
    */
-  @POST @Path("/{boardId}/project") @Consumes(Array("application/json"))
+  @POST @Path("/{boardId}") 
   def createProject(@PathParam("boardId") boardId:String,
                     @Context headers: HttpHeaders, in: Array[Byte]): String = {
     log.info("Create new project")
@@ -48,7 +48,7 @@ class ProjectResource {
    * @val in HTTP input stream conveterted to array
    * @return project identifier
    */
-  @PUT @Consumes(Array("application/json"))
+  @PUT 
   def updateProject(@Context headers: HttpHeaders, in: Array[Byte]): String = {
     log.info("Update project")
     KandashServiceInstance.update[Workflow](

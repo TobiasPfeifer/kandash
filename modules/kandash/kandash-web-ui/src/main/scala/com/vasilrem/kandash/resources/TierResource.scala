@@ -34,7 +34,7 @@ class TierResource {
    * @val in HTTP input stream conveterted to array
    * @return tier identifier
    */
-  @POST @Path("/{boardId}/tier") @Consumes(Array("application/json"))
+  @POST @Path("/{boardId}") 
   def createTier(@PathParam("boardId") boardId:String,
                  @Context headers: HttpHeaders, in: Array[Byte]): String = {
     log.info("Create new tier")
@@ -47,9 +47,10 @@ class TierResource {
    * @val headers HTTP headers
    * @val in HTTP input stream conveterted to array
    */
-  @PUT @Consumes(Array("application/json"))
+  @PUT 
   def updateTier(@Context headers: HttpHeaders, in: Array[Byte]) = {
     log.info("Update tier")
+    // db.dashboardmodels.update({'tiers.order':{ $gt: 0 }}, {$inc: {'tiers.1.order':1}})
     KandashServiceInstance.update[Tier](
       Serialization.read[Tier](new String(in)))
   }

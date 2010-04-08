@@ -40,8 +40,7 @@ var createProjectDialog = new Ext.Window({
         handler: function(){
             var form = Ext.getCmp('createProjectDialogForm').getForm()
             var projectName = form.items.items[0].getValue()
-            /// CALL SERVICE >> Project ID
-            Ext.getCmp('projectboard').addProject(projectName.replace(' ', ''), projectName)
+            getBoard().addProject(null, projectName)
             createProjectDialog.hide()
         }
     },{

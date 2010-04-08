@@ -31,6 +31,7 @@ com.vasilrem.kandash.board.Project = Ext.extend(Ext.Panel, {
                 fn: function(btn, text){
                     if (btn == 'ok'){
                         project.setTitle(text)
+                        PUT(RESOURCES + RS_PROJECT, project.toJSON())
                     }
                 },
                 value: project.title
@@ -54,6 +55,7 @@ com.vasilrem.kandash.board.Project = Ext.extend(Ext.Panel, {
                     if(btn == 'yes'){
                         var board = project.ownerCt
                         board.removeProject(project)
+                        DELETE(RESOURCES + RS_PROJECT + '/' + project.id)
                     }
                 },
                 animEl: 'elId'
@@ -66,14 +68,17 @@ com.vasilrem.kandash.board.Project = Ext.extend(Ext.Panel, {
      * @param tierId tier identifier
      * @param tierName tier name
      * @param position tier position on the board ('0' - last tier)
+     * @param wipLimit work in progress limit (maximum number of tasks that can
      * @return instance of a new tier added to the project
      */
-    insertTier: function(tierId, tierName, position){
+    insertTier: function(tierId, tierName, position, wipLimit){
         return this.insert(position, {
             xtype: 'kandash.tier',
-            id: tierId,
+            id: this.id + '_' + tierId,
             title: tierName,
             isDeletable: true,
+            order: position,
+            wipLimit: wipLimit,
             height:100
         })
     },
@@ -106,6 +111,16 @@ com.vasilrem.kandash.board.Project = Ext.extend(Ext.Panel, {
             }
         })
         projectBar.ownerCt.doLayout()
+    },
+
+    /**
+     * Converts project to lightweight JSON object
+     */
+    toJSON: function(){
+        return {
+            '_id': this.id,
+            'name': this.title
+        }
     }
 });
 

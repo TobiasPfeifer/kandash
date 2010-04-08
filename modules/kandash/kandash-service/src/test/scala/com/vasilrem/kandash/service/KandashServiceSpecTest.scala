@@ -209,5 +209,14 @@ class IdeaServiceSpecTest extends SpecificationWithJUnit {
 
   }
 
+  "Request for boards list" should {
+    "retun more than 1 board" in{
+      println("\r\n\r\n=====Request for boards list======")
+      val boardsCount = kandashService.getDashboards.length
+      println("Boards count: " + boardsCount)
+      boardsCount>0 must beEqualTo(true)
+    }
+  }
+
 }
 

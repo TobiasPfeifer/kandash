@@ -23,7 +23,11 @@ var addTierForm = new Ext.form.FormPanel({
         emptyText:'Choose the tier...',
         selectOnFocus:true,
         anchor: '100%'
-    })],
+    }),{
+        fieldLabel: 'Work-in-Progress',
+        name: 'wiplimit',
+        anchor: '100%'
+    }],
 
     getTierName: function(){
         return this.items.items[0].getValue()
@@ -31,15 +35,19 @@ var addTierForm = new Ext.form.FormPanel({
 
     getTierPosition: function(){
         return this.items.items[1].getValue()
+    },
+
+    getWipLimit: function(){
+        return this.items.items[2].getValue()
     }
 })
 
 var addTierDialog = new Ext.Window({
     title: 'Add tier',
     width: 300,
-    height:140,
+    height:170,
     minWidth: 300,
-    minHeight: 140,
+    minHeight: 170,
     layout: 'fit',
     plain:true,
     bodyStyle:'padding:5px;',
@@ -50,11 +58,14 @@ var addTierDialog = new Ext.Window({
         text: 'Save',
         type: 'submit',
         handler: function(){
-            /// GET ID FROM THE BACKEND
-            var tierId = addTierForm.getTierName() + addTierForm.getTierPosition()
-            ///
-            var board = Ext.getCmp('projectboard')            
-            board.createTier(tierId ,addTierForm.getTierName(), addTierForm.getTierPosition())
+            debugger
+            var tierId = POST(RESOURCES + RS_TIER + '/' + getBoard().id, {
+                'name': addTierForm.getTierName(),
+                'order': addTierForm.getTierPosition(),
+                'wipLimit': addTierForm.getWipLimit()
+            })
+            var board = getBoard()
+            board.createTier(tierId ,addTierForm.getTierName(), addTierForm.getTierPosition(), addTierForm.getWipLimit())
             addTierDialog.hide()
         }
     },{
@@ -66,7 +77,7 @@ var addTierDialog = new Ext.Window({
 });
 
 showAddTierDialog = function(){
-    var tiers = Ext.getCmp('projectboard').tiers
+    var tiers = getBoard().tiers
     if(addTierForm.items.items[1].store){
         addTierForm.items.items[1].store.removeAll()
     }else{
