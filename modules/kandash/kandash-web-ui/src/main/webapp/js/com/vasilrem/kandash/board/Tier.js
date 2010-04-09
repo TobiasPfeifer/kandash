@@ -56,13 +56,25 @@ com.vasilrem.kandash.board.Tier = Ext.extend(Ext.Panel, {
     }],
 
     /**
+     * Gets order of the tier on the board
+     **/
+    getTierOrder: function(){
+        debugger
+        for(var i=0; i<getBoard().tiers.length; i++){
+            if(this.id.indexOf(getBoard().tiers[i].id) > -1)
+                return i
+        }
+        return -1
+    },
+
+    /**
      * Converts tier to lightweight JSON object
      */
     toJSON: function(id){
         return {
             '_id': id? id : this.id,
             'name': this.title,
-            'order': this.order,
+            'order': this.getTierOrder(),
             'wipLimit': this.wipLimit
         }
     }

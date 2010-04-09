@@ -218,5 +218,105 @@ class IdeaServiceSpecTest extends SpecificationWithJUnit {
     }
   }
 
+  "Evaluated script" should {
+    println("\r\n\r\n=====Evaluated script======")
+    val boardId = kandashService.createNewDashboard("testDashboard")
+    println("Updating board " + boardId)   
+    "affect persisted board model (increse order count of some tiers)" in {
+      val originalDashboard = kandashService.getDashboardById(boardId)
+      println("\r\n\r\n=====affect persisted board model (increse order count of some tiers)======")
+      kandashService.incTiersOrder(boardId, 0)
+      val updatedDashboard = kandashService.getDashboardById(boardId)
+      updatedDashboard.tiers.filter(_.order > 0).foreach({
+          tier=>
+          val index = updatedDashboard.tiers.indexOf(tier)
+          tier.order must beEqualTo(originalDashboard.tiers.apply(index).order + 1)
+        })
+    }
+    "affect persisted board model (decrease order count of some tiers)" in {
+      val originalDashboard = kandashService.getDashboardById(boardId)
+      println("\r\n\r\n=====affect persisted board model (decrease order count of some tiers)======")
+      kandashService.decTiersOrder(boardId, 0)
+      val updatedDashboard = kandashService.getDashboardById(boardId)
+      updatedDashboard.tiers.filter(_.order > 0).foreach({
+          tier=>
+          val index = updatedDashboard.tiers.indexOf(tier)
+          tier.order must beEqualTo(originalDashboard.tiers.apply(index).order - 1)
+        })
+    }
+  }
+
+  "Remove all tasks related to the tier" in {
+    println("\r\n\r\n=====Remove all tasks related to the tier======")
+    val boardId = kandashService.createNewDashboard("testDashboard")
+    val dashboard = kandashService.getDashboardById(boardId)
+    println("Adding tasks to " + dashboard)
+    println("Added new task " +
+            kandashService.add[Task](boardId,
+                                     new Task(null,
+                                              new Some("unknown"),
+                                              "Test Task",
+                                              new Some(5),
+                                              new Some("unknown"),
+                                              50,
+                                              50,
+                                              new Some(100),
+                                              1,
+                                              dashboard.tiers.last._id,
+                                              dashboard.workflows.last._id)))
+    println("Added new task " +
+            kandashService.add[Task](boardId,
+                                     new Task(null,
+                                              new Some("unknown"),
+                                              "Test Task",
+                                              new Some(5),
+                                              new Some("unknown"),
+                                              50,
+                                              50,
+                                              new Some(100),
+                                              1,
+                                              dashboard.tiers.apply(1)._id,
+                                              dashboard.workflows.last._id)))
+    println("Removing tasks from " + dashboard.tiers.last._id + "(" + Tier.collectionName + ")")
+    kandashService.removeTasksFromContainer(dashboard.tiers.last._id, Tier.collectionName)
+    kandashService.getDashboardById(boardId).tasks.length must beEqualTo(1)
+  }
+
+  "Remove all tasks related to the project" in {
+    println("\r\n\r\n=====Remove all tasks related to the project======")
+    val boardId = kandashService.createNewDashboard("testDashboard")
+    val dashboard = kandashService.getDashboardById(boardId)
+    println("Adding tasks to " + dashboard)
+    println("Added new task " +
+            kandashService.add[Task](boardId,
+                                     new Task(null,
+                                              new Some("unknown"),
+                                              "Test Task",
+                                              new Some(5),
+                                              new Some("unknown"),
+                                              50,
+                                              50,
+                                              new Some(100),
+                                              1,
+                                              dashboard.tiers.last._id,
+                                              dashboard.workflows.last._id)))
+    println("Added new task " +
+            kandashService.add[Task](boardId,
+                                     new Task(null,
+                                              new Some("unknown"),
+                                              "Test Task",
+                                              new Some(5),
+                                              new Some("unknown"),
+                                              50,
+                                              50,
+                                              new Some(100),
+                                              1,
+                                              dashboard.tiers.apply(1)._id,
+                                              dashboard.workflows.last._id)))
+    println("Removing tasks from " + dashboard.workflows.last._id + "(" + Workflow.collectionName + ")")
+    kandashService.removeTasksFromContainer(dashboard.workflows.last._id, Workflow.collectionName)
+    kandashService.getDashboardById(boardId).tasks.length must beEqualTo(0)
+  }
+
 }
 

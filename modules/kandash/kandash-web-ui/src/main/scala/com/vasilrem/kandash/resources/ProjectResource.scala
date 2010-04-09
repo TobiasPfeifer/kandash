@@ -62,7 +62,7 @@ class ProjectResource {
   @DELETE @Path("/{projectId}")
   def deleteProject(@PathParam("projectId") projectId:String) = {
     log.info("Delete project " + projectId)
-    KandashServiceInstance.remove(projectId, Workflow.collectionName)
+    KandashServiceInstance.removeProject(projectId)
   }
 
 }

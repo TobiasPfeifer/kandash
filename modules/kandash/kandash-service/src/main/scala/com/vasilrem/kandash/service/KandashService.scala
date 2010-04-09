@@ -24,9 +24,9 @@ trait KandashService extends JObjectBuilder{
   /** mongo database name */
   val database:String
   /** tiers (stages) added to the new board by default */
-  val defaultTiers:List[Tier] = List(new Tier(ObjectId.get.toString, "{tier.name.todo}", 0, None),
+  val defaultTiers:List[Tier] = List(new Tier(ObjectId.get.toString, "{tier.name.todo}", 2, None),
                                      new Tier(ObjectId.get.toString, "{tier.name.inprogress}", 1, None),
-                                     new Tier(ObjectId.get.toString, "{tier.name.done}", 2, None))
+                                     new Tier(ObjectId.get.toString, "{tier.name.done}", 0, None))
   /** workflows (projects) added to the new board by default */
   val defaultWorkflows:List[Workflow] = List(new Workflow(ObjectId.get.toString, "workflow.name.default"))
 
@@ -53,6 +53,17 @@ trait KandashService extends JObjectBuilder{
    * @return board model
    */
   def getDashboardById(id:String):DashboardModel = DashboardModel.find(id).get
+
+  /**
+   * Create dummy empty dashboard with the given ID
+   * @param id identifier of the new board
+   * @return new dummy board model
+   */
+  def createDummyDashboard(id:String):DashboardModel = {
+    val model = DashboardModel(id, "dummy", defaultTiers, defaultWorkflows, List())
+    model.save
+    model
+  }
 
   /**
    * Get board by name
@@ -82,6 +93,17 @@ trait KandashService extends JObjectBuilder{
   }
 
   /**
+   * Adds a new tier to the board
+   * @val boardId identifier of the board the tier will be added to
+   * @val tier tier to be added
+   * @return tier identifier
+   */
+  def addTier(boardId: String, tier: Tier): String = {
+    incTiersOrder(boardId, tier.order - 1)
+    add[Tier](boardId, tier)
+  }
+  
+  /**
    * Updates board element
    * @val document board element
    * @return element identifier
@@ -96,13 +118,68 @@ trait KandashService extends JObjectBuilder{
   }
 
   /**
+   * Increases order number of the board tiers, starting from the tier with
+   * the given order number
+   * @param boardId identifier of the board the tiers should be updated at
+   * @param startingFromOrder tiers with the order number bigger then specified
+   * will have increased (by 1) order number
+   */
+  def incTiersOrder(boardId: String, startingFromOrder: Int) =
+    updateTiersOrder(boardId, startingFromOrder, true)
+
+  /**
+   * Decreases order number of the board tiers, starting from the tier with
+   * the given order number
+   * @param boardId identifier of the board the tiers should be updated at
+   * @param startingFromOrder tiers with the order number bigger then specified
+   * will have decreased (by 1) order number
+   */
+  def decTiersOrder(boardId: String, startingFromOrder: Int) = 
+    updateTiersOrder(boardId, startingFromOrder, false)
+
+  /**
+   * Decreases order number of the board tiers, starting from the specified tier
+   * @param tier identifier of the tier order decrease should start from
+   */
+  def decTiersOrder(tierId: String) = {
+    val board = DashboardModel.find((Tier.collectionName + "._id" -> tierId)).get
+    val tierOrder = board.tiers.find(_._id == tierId).get.order
+    updateTiersOrder(board._id, tierOrder, false)
+  }
+
+  /**
+   * Decreases or increases order number of the board tiers, starting from the tier with
+   * the given order number
+   * @param boardId identifier of the board the tiers should be updated at
+   * @param startingFromOrder tiers with the order number bigger then specified
+   * will have decreased or increased (by 1) order number
+   * @param isInc if true, order number will be increased
+   */
+  def updateTiersOrder(boardId: String, startingFromOrder: Int, isInc: Boolean) = {
+    MongoDB.use(DefaultMongoIdentifier) ( db => {
+        val sign = if(isInc){"+"} else {"-"}
+        db.eval(""" function() {
+                  db.dashboardmodels.find({'_id' : ObjectId('""" + boardId + """')}).forEach(
+                    function(o){
+                      for(var i=0;i<o.tiers.length;i++){
+                        var tier=o.tiers[i];
+                        if(tier.order>""" + startingFromOrder + """){
+                          tier.order""" + sign + """=1;
+                        }
+                      }
+                    db.dashboardmodels.save(o);
+                  })
+                }""")
+      })
+  }
+
+  /**
    * Removes element from the board
    * @val documentId element identifier
    * @val collectionName name of the element's collection'
    */
   def remove(documentId: String, collectionName: String): Unit = {
     val boardId = DashboardModel.find((collectionName + "._id" -> documentId)).get._id
-    println("Element is up to be removed from " + boardId)
     // Workaround to remove element from collection. $unset shouldn't be used,
     // because it replaces removed elements with nulls, that cannot be be pull out
     // of the list
@@ -112,6 +189,49 @@ trait KandashService extends JObjectBuilder{
     DashboardModel.update(("_id" -> boardId),
                           ("$pull" -> (collectionName -> "null")
       ))
+  }
+
+  /**
+   * Removes all tasks assigned to tier, project or any other container
+   * @param collectionType collection type of the container
+   */
+  def removeTasksFromContainer(containerId: String, collectionType: String) = {
+    val containerRefId = collectionType.substring(0, collectionType.length - 1) + "Id"
+    MongoDB.use(DefaultMongoIdentifier) ( db => {
+        db.eval(""" function() {
+                  db.dashboardmodels.find({'""" + collectionType + """._id' : ObjectId('""" + containerId + """')}).forEach(
+                    function(o){
+                      for(var i=(o.tasks.length - 1);i>=0;i--){
+                        print('Task ref ID: ' + o.tasks[i].""" + containerRefId + """.toString())
+                        print('Container ID: """ + containerId + """')
+                        if(o.tasks[i].""" + containerRefId + """.toString() == '""" + containerId + """'){
+                          print('Removing ' + o.tasks[i]._id)
+                          o.tasks.splice(i, 1);
+                        }
+                      }
+                      db.dashboardmodels.save(o);
+                    })
+                }""")
+      })
+  }
+
+  /**
+   * Removes tier from the board
+   * @val tierId identifier of the tier to be removed
+   */
+  def removeTier(tierId: String): Unit = {
+    decTiersOrder(tierId)
+    removeTasksFromContainer(tierId, Tier.collectionName)
+    remove(tierId, Tier.collectionName)
+  }
+
+  /**
+   * Removes project from the board
+   * @val projectId identifier of the project to be removed
+   */
+  def removeProject(projectId: String): Unit = {
+    removeTasksFromContainer(projectId, Workflow.collectionName)
+    remove(projectId, Workflow.collectionName)
   }
 
   /**

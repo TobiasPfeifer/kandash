@@ -31,6 +31,7 @@ class TierResourceSpecTest extends SpecificationWithJUnit {
   def updatedTier(tierId: String) = new Tier(tierId, "test-tier-updated", 1, None)
 
   "Create tier" in {
+    println("Creating new tier in " + boardId)
     tierResource.createTier(boardId,
                             null,
                             Serialization.write(testTier).getBytes) must notBeNull
@@ -47,7 +48,8 @@ class TierResourceSpecTest extends SpecificationWithJUnit {
   "Delete tier" in {
     val tierId = tierResource.createTier(boardId,
                                          null,
-                                         Serialization.write(testTier).getBytes)
+                                         Serialization.write(testTier).getBytes)   
+    println("Deleting tier " + tierId + " from " + boardResource.getBoard(boardId))
     tierResource.deleteTier(tierId)
   }
 

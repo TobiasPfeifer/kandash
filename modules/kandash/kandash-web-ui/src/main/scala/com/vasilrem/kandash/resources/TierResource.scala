@@ -38,8 +38,7 @@ class TierResource {
   def createTier(@PathParam("boardId") boardId:String,
                  @Context headers: HttpHeaders, in: Array[Byte]): String = {
     log.info("Create new tier")
-    KandashServiceInstance.add[Tier](boardId,
-                                     Serialization.read[Tier](new String(in)))
+    KandashServiceInstance.addTier(boardId, Serialization.read[Tier](new String(in)))
   }
 
   /**
@@ -50,7 +49,6 @@ class TierResource {
   @PUT 
   def updateTier(@Context headers: HttpHeaders, in: Array[Byte]) = {
     log.info("Update tier")
-    // db.dashboardmodels.update({'tiers.order':{ $gt: 0 }}, {$inc: {'tiers.1.order':1}})
     KandashServiceInstance.update[Tier](
       Serialization.read[Tier](new String(in)))
   }
@@ -62,7 +60,7 @@ class TierResource {
   @DELETE @Path("/{tierId}")
   def deleteTier(@PathParam("tierId") tierId:String) = {
     log.info("Delete tier " + tierId)
-    KandashServiceInstance.remove(tierId, Tier.collectionName)
+    KandashServiceInstance.removeTier(tierId)
   }
 
 }

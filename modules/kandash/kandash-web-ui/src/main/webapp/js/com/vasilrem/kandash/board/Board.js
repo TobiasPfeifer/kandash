@@ -240,7 +240,7 @@ com.vasilrem.kandash.board.Board = Ext.extend(Ext.Panel, {
             }
         }       
     },
-
+        
     /**
      * Removes tier from cache
      * @param tierId identifier of the tier to be removed from cache
