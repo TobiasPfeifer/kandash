@@ -318,5 +318,20 @@ class IdeaServiceSpecTest extends SpecificationWithJUnit {
     kandashService.getDashboardById(boardId).tasks.length must beEqualTo(0)
   }
 
+  "Change tier order" in {
+    println("\r\n\r\n=====Change tier order======")
+    val boardId = kandashService.createNewDashboard("testDashboard")
+    val dashboard = kandashService.getDashboardById(boardId)
+    print("Updating board " + boardId +
+          ", task ID " + dashboard.tiers.last._id +
+          ", task order " + dashboard.tiers.last.order +
+          ", setting order " + 2
+    )
+    kandashService.changeTierOrder(dashboard.tiers.last._id, 2)
+    val updatedDashboard = kandashService.getDashboardById(boardId)
+    updatedDashboard.tiers.last.order must beEqualTo(2)
+    updatedDashboard.tiers.first.order must beEqualTo(0)
+  }
+
 }
 

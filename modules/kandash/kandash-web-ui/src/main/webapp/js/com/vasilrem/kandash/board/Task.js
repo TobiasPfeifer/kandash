@@ -130,6 +130,13 @@ com.vasilrem.kandash.board.Task.DropZone = Ext.extend(Ext.dd.DDProxy, {
             var el = Ext.get(this.getEl());
             var task = Ext.getCmp(el.id)
             if(this.lastTarget) {
+                debugger
+                var tierId = Ext.getCmp(this.lastTarget.id).getTierId()
+                if(getBoard().getTasksPerTier(tierId).length >=
+                    getBoard().boardGrid[Ext.getCmp(this.lastTarget.id).ownerCt.id][tierId].getWipLimit()){
+                    Ext.Msg.alert('Task cannot be assigned to the tier!', 'WiP limit is reached!');
+                    return
+                }
                 Ext.getCmp(this.lastTarget.id).add(task)
                 Ext.getCmp(this.lastTarget.id).doLayout()
             }

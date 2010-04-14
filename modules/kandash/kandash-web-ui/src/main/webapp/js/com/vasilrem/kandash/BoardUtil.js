@@ -13,10 +13,12 @@ function getBoard(){
 /**
  * Initializes board from JSON object recieved from server
  * @param boardId board identifier
+ * @return initialized board
  */
 function initBoard(boardId){
     var boardModel = Ext.decode(GET(RESOURCES + RS_BOARD + '/' + boardId))
     var board = getBoard()
+    board.removeAll()
     board.id = boardId
     board.name = boardModel.name
     for(var i=0; i<boardModel.tiers.length; i++){
@@ -33,4 +35,5 @@ function initBoard(boardId){
             task.description, task.assigneeId, task.estimation,
             task.priority, task.offsetLeft, task.offsetTop)
     }
+    return board
 }

@@ -41,6 +41,7 @@ class TierResourceSpecTest extends SpecificationWithJUnit {
     val tierId = tierResource.createTier(boardId,
                                          null,
                                          Serialization.write(testTier).getBytes)
+    println("Updating tier " + tierId)
     tierResource.updateTier(null,
                             Serialization.write(updatedTier(tierId)).getBytes) must notBeNull
   }

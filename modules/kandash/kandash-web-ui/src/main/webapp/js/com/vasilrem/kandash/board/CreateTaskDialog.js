@@ -120,11 +120,17 @@ var updateTaskDialog = new Ext.Window({
                 task.setFormPriority(priority)
                 PUT(RESOURCES + RS_TASK, task.toJSON())
             }else{
+                debugger
                 var projectId = form.getProject()
-                board.addTask(null, projectId,
-                    board.tiers[board.tiers.length-1].id,
-                    description, assignedTo, estimation,
-                    priority, 20, 20)
+                var tierId = board.tiers[board.tiers.length-1].id
+                if(board.getTasksPerTier(tierId).length >= board.boardGrid[projectId][tierId].getWipLimit()){
+                    Ext.Msg.alert('Task cannot be assigned to the tier!', 'WiP limit is reached!');
+                }else{
+                    board.addTask(null, projectId,
+                        tierId,
+                        description, assignedTo, estimation,
+                        priority, 20, 20)
+                }
             }
             updateTaskDialog.hide()
         }

@@ -118,6 +118,16 @@ trait KandashService extends JObjectBuilder{
   }
 
   /**
+   * Updates tier
+   * @val tier
+   * @return tier identifier
+   */
+  def updateTier(tier: Tier): String = {
+    changeTierOrder(tier._id.toString(), tier.order)
+    update[Tier](tier)
+  }
+
+  /**
    * Increases order number of the board tiers, starting from the tier with
    * the given order number
    * @param boardId identifier of the board the tiers should be updated at
@@ -168,6 +178,41 @@ trait KandashService extends JObjectBuilder{
                         }
                       }
                     db.dashboardmodels.save(o);
+                  })
+                }""")
+      })
+  }
+
+  /**
+   * Changes order of the tier to the specified value
+   * @param tierId identifier of the tier to be updated
+   * @param order new tier order value
+   */
+  def changeTierOrder(tierId: String, order: Int) = {
+    MongoDB.use(DefaultMongoIdentifier) ( db => {
+        db.eval(""" function() {
+                  db.dashboardmodels.find({'tiers._id' : ObjectId('""" + tierId + """')}).forEach(
+                    function(o){
+                      var sourceIndex
+                      var targetIndex
+                      var sourceOrder
+                      for(var i=0;i<o.tiers.length;i++){
+                        var tier=o.tiers[i];
+                        if(tier._id.toString() == '""" + tierId + """'){
+                          sourceIndex = i
+                          sourceOrder = tier.order
+                        }
+                        if(tier.order == """ + order + """){
+                          targetIndex = i
+                        }
+                      }
+                      print('targetIndex = ' + targetIndex)
+                      print('sourceIndex = ' + sourceIndex)
+                      print('order = ' + """ + order + """)
+                      print('sourceOrder = ' + sourceOrder)
+                      o.tiers[targetIndex].order = sourceOrder
+                      o.tiers[sourceIndex].order = """ + order + """
+                      db.dashboardmodels.save(o);
                   })
                 }""")
       })

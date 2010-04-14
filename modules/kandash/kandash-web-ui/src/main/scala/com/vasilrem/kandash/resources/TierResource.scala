@@ -49,7 +49,7 @@ class TierResource {
   @PUT 
   def updateTier(@Context headers: HttpHeaders, in: Array[Byte]) = {
     log.info("Update tier")
-    KandashServiceInstance.update[Tier](
+    KandashServiceInstance.updateTier(
       Serialization.read[Tier](new String(in)))
   }
 

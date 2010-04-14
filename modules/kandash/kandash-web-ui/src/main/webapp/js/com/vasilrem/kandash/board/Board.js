@@ -45,6 +45,7 @@ com.vasilrem.kandash.board.Board = Ext.extend(Ext.Panel, {
                 wipLimit: this.tiers[j].wipLimit,
                 height:this.getHeight()/this.tiers.length - 20
             })
+            boardCell.setTitle(boardCell.getDisplayableName())
             boardCell.on("collapse", this.updateTiersHeight)
             boardCell.on("expand", this.updateTiersHeight)
             this.boardGrid[projectId][this.tiers[j].id] = boardCell
@@ -56,7 +57,7 @@ com.vasilrem.kandash.board.Board = Ext.extend(Ext.Panel, {
             this.boardGrid[projectId][this.tiers[j].id].dd.endDrag = function() {
             }
             if(!projectPaneDefaultHeightIsSet){
-                this.defaultProjectPaneHeight += this.boardGrid[projectId][this.tiers[j].id].body.getHeight()
+                this.defaultProjectPaneHeight += (this.boardGrid[projectId][this.tiers[j].id].body.getHeight())
             }
         }
         return projectId
@@ -79,6 +80,7 @@ com.vasilrem.kandash.board.Board = Ext.extend(Ext.Panel, {
      */
     updateTiersHeight: function(var1, var2, var3, projectIdentifier){
         var projectId
+        debugger
         if(projectIdentifier){
             projectId = projectIdentifier
         }else{
@@ -97,8 +99,12 @@ com.vasilrem.kandash.board.Board = Ext.extend(Ext.Panel, {
                 if(!tiers[tier].body){
                     tiers[tier].ownerCt.doLayout()
                 }
-                if(tiers[tier].body){
-                    tiers[tier].body.setHeight(getBoard().defaultProjectPaneHeight/(tiersCount-collapsedTiers))
+                try{
+                    if(tiers[tier].body){
+                        tiers[tier].body.setHeight(getBoard().defaultProjectPaneHeight/(tiersCount-collapsedTiers))
+                    }
+                }catch(e){
+                    print(e)
                 }
             }
         }
@@ -159,7 +165,7 @@ com.vasilrem.kandash.board.Board = Ext.extend(Ext.Panel, {
      * @return task identifier
      */
     addTask: function(taskId, projectId, tierId, taskName, assignedTo, estimation,
-        priority, offsetLeft, offsetTop){
+        priority, offsetLeft, offsetTop){        
         if(!taskId){
             taskId = POST(RESOURCES + RS_TASK + '/' + getBoard().id, {
                 'assigneeId': assignedTo, // TO CHANGE: assignee name should be replaced with assignee ID
@@ -185,10 +191,11 @@ com.vasilrem.kandash.board.Board = Ext.extend(Ext.Panel, {
             y: offsetTop,
             items: new com.vasilrem.kandash.board.TaskForm(taskName,
                 assignedTo,estimation,priority)
-        }                
+        }
         boardCell.add(task)
         boardCell.doLayout()
         Ext.getCmp(task.id).el.dom.getElementsByClassName('x-panel-tc')[0].className='x-panel-tc-'+getPriorityById(priority).toLowerCase()
+        Ext.getCmp(task.id).collapse()
         return taskId
     },
 
@@ -197,22 +204,34 @@ com.vasilrem.kandash.board.Board = Ext.extend(Ext.Panel, {
      * @param tierId identifier of the tire to be updated
      * @param tierName tier name
      * @param wipLimit WiP limit
+     * @param order absolute order of the tier
+     * @return returns true, if tier order was updated
      */
-    updateTier: function(tierId, tierName, wipLimit){
+    updateTier: function(tierId, tierName, wipLimit, order){
+        var originalTierOrder = -1
         var projects = this.getProjects()
+        var orderUpdated = false
         for(project in projects){
             var projectTierCell = this.boardGrid[project][tierId]
             if(projectTierCell){
-                projectTierCell.setTitle(tierName)
+                originalTierOrder = projectTierCell.getTierOrder()
+                projectTierCell.setTitle(projectTierCell.getDisplayableName(tierName, wipLimit))
+                projectTierCell.wipLimit = wipLimit                
             }
         }
-        for(var i =0; i<this.tiers.length; i++){
-            if(this.tiers[i].id == tierId){
-                this.tiers[i].name = tierName
-                this.tiers[i].wipLimit = wipLimit
-                return
+        
+        var tier = this.tiers[originalTierOrder]
+        if(tier){
+            tier.name = tierName
+            tier.wipLimit = wipLimit
+            if(order != null){
+                var targetTier = this.tiers[order]
+                this.tiers[order] = this.tiers[originalTierOrder]
+                this.tiers[originalTierOrder] = targetTier
+                orderUpdated = true
             }
         }
+        return orderUpdated
     },
 
     /**
@@ -224,21 +243,21 @@ com.vasilrem.kandash.board.Board = Ext.extend(Ext.Panel, {
      * be assigned to the tier)
      */
     createTier: function(tierId, tierName, position, wipLimit){
-        debugger
+        
         var projects = this.getProjects()
         this.tiers.splice(position, 0, {
             'id': tierId,
             'name': tierName,
             'isDeletable': true,
             'wipLimit': wipLimit
-        }) 
+        })
         for(project in projects){
             if(projects[project].insertTier){
                 var tier = projects[project].insertTier(tierId, tierName, position, wipLimit)
                 this.boardGrid[project][tierId] = tier
                 this.updateTiersHeight(null, null, null, project)
             }
-        }       
+        }
     },
         
     /**
@@ -276,6 +295,19 @@ com.vasilrem.kandash.board.Board = Ext.extend(Ext.Panel, {
     removeProject: function(project){
         this.remove(project)
         this.resizeProjectColumns()
+    },
+
+    /**
+     * Gets list of tasts assigned to the tier across all projects
+     * @param tierId tier identifier
+     */
+    getTasksPerTier: function(tierId){
+        debugger
+        var tasks = new Array()
+        for(var i=0; i<this.items.length; i++){
+            tasks.push(this.boardGrid[this.items.items[i].id][tierId].getTasks())
+        }
+        return tasks.flatten()
     },
 
     /**

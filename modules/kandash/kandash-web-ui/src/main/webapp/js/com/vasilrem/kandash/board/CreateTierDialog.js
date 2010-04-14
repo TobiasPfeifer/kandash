@@ -13,7 +13,7 @@ var addTierForm = new Ext.form.FormPanel({
         name: 'tiername',
         anchor: '100%'
     }, new Ext.form.ComboBox({
-        fieldLabel: 'Add after',
+        fieldLabel: 'Starts after',
         hiddenName:'tierName',
         valueField:'tierPosition',
         displayField:'tierName',
@@ -58,14 +58,26 @@ var addTierDialog = new Ext.Window({
         text: 'Save',
         type: 'submit',
         handler: function(){
-            debugger
-            var tierId = POST(RESOURCES + RS_TIER + '/' + getBoard().id, {
-                'name': addTierForm.getTierName(),
-                'order': addTierForm.getTierPosition(),
-                'wipLimit': addTierForm.getWipLimit()
-            })
-            var board = getBoard()
-            board.createTier(tierId ,addTierForm.getTierName(), addTierForm.getTierPosition(), addTierForm.getWipLimit())
+            var tierId            
+            if(addTierDialog.isUpdate){
+                debugger
+                var tierCell = addTierDialog.isUpdate
+                tierId = tierCell.id.substr(
+                    tierCell.id.indexOf('_') + 1, tierCell.id.length)
+                var isTierUpdated = tierCell.ownerCt.ownerCt.updateTier(tierId, addTierForm.getTierName(), addTierForm.getWipLimit(), addTierForm.getTierPosition())
+                PUT(RESOURCES + RS_TIER, tierCell.toJSON(tierId))
+                if(isTierUpdated){
+                    initBoard(boardFromRequest)
+                }
+            }else{
+                tierId = POST(RESOURCES + RS_TIER + '/' + getBoard().id, {
+                    'name': addTierForm.getTierName(),
+                    'order': addTierForm.getTierPosition(),
+                    'wipLimit': addTierForm.getWipLimit()
+                })
+                var board = getBoard()
+                board.createTier(tierId ,addTierForm.getTierName(), addTierForm.getTierPosition(), addTierForm.getWipLimit())
+            }
             addTierDialog.hide()
         }
     },{
@@ -76,7 +88,7 @@ var addTierDialog = new Ext.Window({
     }]
 });
 
-showAddTierDialog = function(){
+showAddTierDialog = function(tier){
     var tiers = getBoard().tiers
     if(addTierForm.items.items[1].store){
         addTierForm.items.items[1].store.removeAll()
@@ -85,12 +97,31 @@ showAddTierDialog = function(){
             fields: ['tierPosition', 'tierName']
         })
     }
-    for(var i = 1; i< tiers.length; i++){
-        addTierForm.items.items[1].store.add(
-            new Ext.data.Record({
-                'tierPosition': i,
-                'tierName': tiers[i].name
-            }))
+    if(tier){
+        for(var i = 0; i< tiers.length; i++){
+            if(i != tier.getTierOrder())
+                addTierForm.items.items[1].store.add(
+                    new Ext.data.Record({
+                        'tierPosition': i,
+                        'tierName': tiers[i].name
+                    }))
+        }
+        addTierForm.items.items[0].setValue(tier.getTierName())
+        addTierForm.items.items[1].fieldLabel = 'Swap with'
+        addTierForm.items.items[1].setValue(null)
+        addTierForm.items.items[2].setValue(tier.wipLimit)
+        addTierDialog.isUpdate = tier
+    }else{
+        for(var i = 1; i< tiers.length; i++){
+            addTierForm.items.items[1].store.add(
+                new Ext.data.Record({
+                    'tierPosition': i,
+                    'tierName': tiers[i].name
+                }))
+        }
+        addTierForm.items.items[0].setValue('')
+        addTierForm.items.items[2].setValue('')
+        addTierDialog.isUpdate = null
     }
     addTierDialog.show()
 }
