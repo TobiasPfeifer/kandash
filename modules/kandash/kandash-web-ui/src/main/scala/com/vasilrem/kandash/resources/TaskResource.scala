@@ -41,7 +41,7 @@ class TaskResource(kandashService: KandashService) {
                  @Context headers: HttpHeaders, in: Array[Byte]): String = {
     log.info("Create new task")
     kandashService.add[Task](boardId,
-                                     Serialization.read[Task](new String(in)))
+                             Serialization.read[Task](new String(in)))
   }
 
   /**
@@ -52,7 +52,7 @@ class TaskResource(kandashService: KandashService) {
   @PUT 
   def updateTask(@Context headers: HttpHeaders, in: Array[Byte]) = {
     log.info("Update task")
-    kandashService.update[Task](
+    kandashService.updateTask(
       Serialization.read[Task](new String(in)))
   }
 

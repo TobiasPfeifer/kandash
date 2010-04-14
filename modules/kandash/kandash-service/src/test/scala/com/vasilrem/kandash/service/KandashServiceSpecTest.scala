@@ -322,15 +322,39 @@ class IdeaServiceSpecTest extends SpecificationWithJUnit {
     println("\r\n\r\n=====Change tier order======")
     val boardId = kandashService.createNewDashboard("testDashboard")
     val dashboard = kandashService.getDashboardById(boardId)
-    print("Updating board " + boardId +
-          ", task ID " + dashboard.tiers.last._id +
-          ", task order " + dashboard.tiers.last.order +
-          ", setting order " + 2
+    println("Updating board " + boardId +
+            ", task ID " + dashboard.tiers.last._id +
+            ", task order " + dashboard.tiers.last.order +
+            ", setting order " + 2
     )
     kandashService.changeTierOrder(dashboard.tiers.last._id, 2)
     val updatedDashboard = kandashService.getDashboardById(boardId)
     updatedDashboard.tiers.last.order must beEqualTo(2)
     updatedDashboard.tiers.first.order must beEqualTo(0)
+  }
+
+  "Changed fact's tier" should{
+    "create an appropriate fact" in{
+      println("\r\n\r\n=====Changed fact's tier======")
+      val boardId = kandashService.createNewDashboard("testDashboard")
+      val dashboard = kandashService.getDashboardById(boardId)
+      val taskId = kandashService.add[Task](boardId,
+                                            new Task(null,
+                                                     new Some("unknown"),
+                                                     "Test Task",
+                                                     new Some(5),
+                                                     new Some("unknown"),
+                                                     50,
+                                                     50,
+                                                     new Some(100),
+                                                     1,
+                                                     dashboard.tiers.last._id,
+                                                     dashboard.workflows.last._id))
+      println("Added task " + taskId + " to board " + boardId)
+      println("Setting tier " + dashboard.tiers.first._id)
+      kandashService.createFact(taskId, dashboard.tiers.first._id) must beTrue
+      kandashService.createFact(taskId, dashboard.tiers.last._id) must beFalse
+    }
   }
 
 }

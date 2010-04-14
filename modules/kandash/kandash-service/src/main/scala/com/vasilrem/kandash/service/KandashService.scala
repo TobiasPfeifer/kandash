@@ -33,9 +33,6 @@ trait KandashService extends JObjectBuilder{
   /** instantiates new connection to mongo */
   MongoDB.defineDb(DefaultMongoIdentifier, MongoAddress(MongoHost(host, port), database))
 
-  /** Serialization into JSON goes w/o any type hints */
-  implicit val formats = Serialization.formats(NoTypeHints)
-
   /**
    * Craete new board model
    * @val name name of the model
@@ -118,6 +115,29 @@ trait KandashService extends JObjectBuilder{
   }
 
   /**
+   * Updates task
+   * @val task
+   * @return task identifier
+   */
+  def updateTask(task:Task): String = {
+    createFact(task._id, task.tierId)
+    update[Task](task)
+  }
+
+  /**
+   * Creates new fact based on changing the task's tier (state)
+   * @val taskId identifier of the task
+   * @val tierId identifier if the new task's tier (state)
+   * @return true, if task's tier was changed
+   */
+  def createFact(taskId: String, tierId: String):Boolean = {
+    val tierIsChanged: Boolean = 
+      DashboardModel.find(("tasks._id" -> taskId)).get.tasks.find {task => task._id == taskId && task.tierId == tierId} == None
+    if(tierIsChanged) TaskUpdateFact(ObjectId.get.toString, taskId, tierId, new java.util.Date).save
+    tierIsChanged
+  }
+
+  /**
    * Updates tier
    * @val tier
    * @return tier identifier
@@ -144,7 +164,7 @@ trait KandashService extends JObjectBuilder{
    * @param startingFromOrder tiers with the order number bigger then specified
    * will have decreased (by 1) order number
    */
-  def decTiersOrder(boardId: String, startingFromOrder: Int) = 
+  def decTiersOrder(boardId: String, startingFromOrder: Int) =
     updateTiersOrder(boardId, startingFromOrder, false)
 
   /**

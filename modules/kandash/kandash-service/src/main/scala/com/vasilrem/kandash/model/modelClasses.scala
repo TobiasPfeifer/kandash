@@ -86,7 +86,7 @@ object Task extends MongoDocumentMeta[Task] {
  * TaskUpdateFact represents any change of facts state (IOW, new fact is created
  * every time the tier is changed for a task)
  */
-case class TaskUpdateFact(_id:String, task:Task, tier:Tier,
+case class TaskUpdateFact(_id:String, taskId:String, tierId:String,
                           updateDate:Date) extends MongoDocument[TaskUpdateFact]{
   def meta = TaskUpdateFact
 }
