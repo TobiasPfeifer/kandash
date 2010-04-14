@@ -16,7 +16,7 @@ import com.vasilrem.kandash.resources._
 
 class BoardResourceSpecTest extends SpecificationWithJUnit {
 
-  val boardResource = new BoardResource()
+  val boardResource = new BoardResource(KandashServiceTestInstance)
 
   "Creates new board" in{    
     boardResource.createBoard("tast-board") must notBeNull

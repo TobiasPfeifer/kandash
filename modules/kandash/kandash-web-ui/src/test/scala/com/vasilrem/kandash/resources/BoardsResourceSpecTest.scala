@@ -16,7 +16,7 @@ import com.vasilrem.kandash.resources._
 
 class BoardsResourceSpecTest extends SpecificationWithJUnit {
 
-  val boardsResource = new BoardsResource()
+  val boardsResource = new BoardsResource(KandashServiceTestInstance)
 
   "Gets boards" in {
     boardsResource.getBoards must include("workflows")

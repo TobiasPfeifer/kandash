@@ -23,8 +23,8 @@ class TierResourceSpecTest extends SpecificationWithJUnit {
    */
   implicit val formats = Serialization.formats(NoTypeHints)
 
-  val boardResource = new BoardResource()
-  val tierResource = new TierResource()
+  val boardResource = new BoardResource(KandashServiceTestInstance)
+  val tierResource = new TierResource(KandashServiceTestInstance)
 
   val boardId = boardResource.createBoard("test-board")
   val testTier = new Tier(null, "test-tier", 1, None)

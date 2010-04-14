@@ -18,7 +18,9 @@ import net.liftweb.json.Serialization.{read, write, formats}
  * REST-endpoint to work with tiers
  */
 @Path("/tier")
-class TierResource {
+class TierResource(kandashService: KandashService) {
+
+  def this() = this(KandashServiceInstance)
 
   val log = LogFactory.getLog(this.getClass);
 
@@ -38,7 +40,7 @@ class TierResource {
   def createTier(@PathParam("boardId") boardId:String,
                  @Context headers: HttpHeaders, in: Array[Byte]): String = {
     log.info("Create new tier")
-    KandashServiceInstance.addTier(boardId, Serialization.read[Tier](new String(in)))
+    kandashService.addTier(boardId, Serialization.read[Tier](new String(in)))
   }
 
   /**
@@ -49,7 +51,7 @@ class TierResource {
   @PUT 
   def updateTier(@Context headers: HttpHeaders, in: Array[Byte]) = {
     log.info("Update tier")
-    KandashServiceInstance.updateTier(
+    kandashService.updateTier(
       Serialization.read[Tier](new String(in)))
   }
 
@@ -60,7 +62,7 @@ class TierResource {
   @DELETE @Path("/{tierId}")
   def deleteTier(@PathParam("tierId") tierId:String) = {
     log.info("Delete tier " + tierId)
-    KandashServiceInstance.removeTier(tierId)
+    kandashService.removeTier(tierId)
   }
 
 }

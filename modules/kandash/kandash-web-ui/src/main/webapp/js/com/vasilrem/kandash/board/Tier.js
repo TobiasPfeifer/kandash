@@ -102,7 +102,7 @@ com.vasilrem.kandash.board.Tier = Ext.extend(Ext.Panel, {
      * Converts tier to lightweight JSON object
      */
     toJSON: function(id){
-        debugger
+        
         return {
             '_id': id? id : this.id,
             'name': this.getTierName(),

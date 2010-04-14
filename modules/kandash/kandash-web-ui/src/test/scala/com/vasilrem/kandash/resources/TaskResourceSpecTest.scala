@@ -23,8 +23,8 @@ class TaskResourceSpecTest extends SpecificationWithJUnit {
    */
   implicit val formats = Serialization.formats(NoTypeHints)
 
-  val boardResource = new BoardResource()
-  val taskResource = new TaskResource()
+  val boardResource = new BoardResource(KandashServiceTestInstance)
+  val taskResource = new TaskResource(KandashServiceTestInstance)
 
   val boardId = boardResource.createBoard("test-board")
   val testTask =  new Task(null,

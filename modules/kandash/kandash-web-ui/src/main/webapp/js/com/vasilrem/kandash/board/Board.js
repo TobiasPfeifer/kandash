@@ -80,7 +80,7 @@ com.vasilrem.kandash.board.Board = Ext.extend(Ext.Panel, {
      */
     updateTiersHeight: function(var1, var2, var3, projectIdentifier){
         var projectId
-        debugger
+        
         if(projectIdentifier){
             projectId = projectIdentifier
         }else{
@@ -302,7 +302,7 @@ com.vasilrem.kandash.board.Board = Ext.extend(Ext.Panel, {
      * @param tierId tier identifier
      */
     getTasksPerTier: function(tierId){
-        debugger
+        
         var tasks = new Array()
         for(var i=0; i<this.items.length; i++){
             tasks.push(this.boardGrid[this.items.items[i].id][tierId].getTasks())

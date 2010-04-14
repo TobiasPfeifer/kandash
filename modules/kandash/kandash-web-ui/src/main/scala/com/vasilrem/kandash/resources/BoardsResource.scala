@@ -18,7 +18,9 @@ import net.liftweb.json.Serialization.{read, write, formats}
  * REST-endpoint to work with boards
  */
 @Path("/boards")
-class BoardsResource {
+class BoardsResource(kandashService: KandashService) {
+
+  def this() = this(KandashServiceInstance)
 
   val log = LogFactory.getLog(this.getClass);
 
@@ -35,7 +37,7 @@ class BoardsResource {
   @Produces(Array("text/json"))
   def getBoards(): String = {
     log.info("Getting list of boards")
-    Serialization.write(KandashServiceInstance.getDashboards)
+    Serialization.write(kandashService.getDashboards)
   }
 
 }

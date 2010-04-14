@@ -18,9 +18,11 @@ import net.liftweb.json.Serialization.{read, write, formats}
  * REST-endpoint to work with boards
  */
 @Path("/board")
-class BoardResource {
+class BoardResource(kandashService: KandashService) {
 
-  val log = LogFactory.getLog(this.getClass);
+  def this() = this(KandashServiceInstance)
+
+  val log = LogFactory.getLog(this.getClass)
 
   /**
    * Type hint for serialization/deserialization
@@ -35,7 +37,7 @@ class BoardResource {
   @POST @Path("/{boardName}")
   def createBoard(@PathParam("boardName") boardName:String): String = {
     log.info("Creating new dashboard " + boardName)
-    KandashServiceInstance.createNewDashboard(boardName)
+    kandashService.createNewDashboard(boardName)
   }
 
   /**
@@ -47,7 +49,7 @@ class BoardResource {
   @Produces(Array("text/json"))
   def getBoard(@PathParam("boardId") boardId:String): String = {
     log.info("Getting board " + boardId)
-    Serialization.write(KandashServiceInstance.getDashboardById(boardId))
+    Serialization.write(kandashService.getDashboardById(boardId))
   }
 
 }

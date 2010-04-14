@@ -18,7 +18,9 @@ import net.liftweb.json.Serialization.{read, write, formats}
  * REST-endpoint to work with tasks
  */
 @Path("/task")
-class TaskResource {
+class TaskResource(kandashService: KandashService) {
+
+  def this() = this(KandashServiceInstance)
 
   val log = LogFactory.getLog(this.getClass);
 
@@ -38,7 +40,7 @@ class TaskResource {
   def createTask(@PathParam("boardId") boardId:String,
                  @Context headers: HttpHeaders, in: Array[Byte]): String = {
     log.info("Create new task")
-    KandashServiceInstance.add[Task](boardId,
+    kandashService.add[Task](boardId,
                                      Serialization.read[Task](new String(in)))
   }
 
@@ -50,7 +52,7 @@ class TaskResource {
   @PUT 
   def updateTask(@Context headers: HttpHeaders, in: Array[Byte]) = {
     log.info("Update task")
-    KandashServiceInstance.update[Task](
+    kandashService.update[Task](
       Serialization.read[Task](new String(in)))
   }
 
@@ -61,7 +63,7 @@ class TaskResource {
   @DELETE @Path("/{taskId}")
   def deleteTask(@PathParam("taskId") taskId:String) = {
     log.info("Delete task " + taskId)
-    KandashServiceInstance.remove(taskId, Task.collectionName)
+    kandashService.remove(taskId, Task.collectionName)
   }
 
 }

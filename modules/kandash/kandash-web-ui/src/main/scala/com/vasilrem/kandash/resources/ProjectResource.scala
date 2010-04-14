@@ -18,7 +18,9 @@ import net.liftweb.json.Serialization.{read, write, formats}
  * REST-endpoint to work with projects
  */
 @Path("/project")
-class ProjectResource {
+class ProjectResource(kandashService: KandashService) {
+
+  def this() = this(KandashServiceInstance)
 
   val log = LogFactory.getLog(this.getClass);
 
@@ -38,7 +40,7 @@ class ProjectResource {
   def createProject(@PathParam("boardId") boardId:String,
                     @Context headers: HttpHeaders, in: Array[Byte]): String = {
     log.info("Create new project")
-    KandashServiceInstance.add[Workflow](boardId,
+    kandashService.add[Workflow](boardId,
                                          Serialization.read[Workflow](new String(in)))
   }
 
@@ -51,7 +53,7 @@ class ProjectResource {
   @PUT 
   def updateProject(@Context headers: HttpHeaders, in: Array[Byte]): String = {
     log.info("Update project")
-    KandashServiceInstance.update[Workflow](
+    kandashService.update[Workflow](
       Serialization.read[Workflow](new String(in)))
   }
 
@@ -62,7 +64,7 @@ class ProjectResource {
   @DELETE @Path("/{projectId}")
   def deleteProject(@PathParam("projectId") projectId:String) = {
     log.info("Delete project " + projectId)
-    KandashServiceInstance.removeProject(projectId)
+    kandashService.removeProject(projectId)
   }
 
 }

@@ -23,8 +23,8 @@ class ProjectResourceSpecTest extends SpecificationWithJUnit {
    */
   implicit val formats = Serialization.formats(NoTypeHints)
 
-  val boardResource = new BoardResource()
-  val projectResource = new ProjectResource()
+  val boardResource = new BoardResource(KandashServiceTestInstance)
+  val projectResource = new ProjectResource(KandashServiceTestInstance)
 
   val boardId = boardResource.createBoard("test-board")
   val testProject = new Workflow(null, "test-project")

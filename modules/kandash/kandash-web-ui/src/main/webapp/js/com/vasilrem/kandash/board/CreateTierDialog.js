@@ -13,7 +13,7 @@ var addTierForm = new Ext.form.FormPanel({
         name: 'tiername',
         anchor: '100%'
     }, new Ext.form.ComboBox({
-        fieldLabel: 'Starts after',
+        fieldLabel: 'Starts after/swap with',
         hiddenName:'tierName',
         valueField:'tierPosition',
         displayField:'tierName',
@@ -45,9 +45,9 @@ var addTierForm = new Ext.form.FormPanel({
 var addTierDialog = new Ext.Window({
     title: 'Add tier',
     width: 300,
-    height:170,
+    height:175,
     minWidth: 300,
-    minHeight: 170,
+    minHeight: 175,
     layout: 'fit',
     plain:true,
     bodyStyle:'padding:5px;',
@@ -60,7 +60,7 @@ var addTierDialog = new Ext.Window({
         handler: function(){
             var tierId            
             if(addTierDialog.isUpdate){
-                debugger
+                
                 var tierCell = addTierDialog.isUpdate
                 tierId = tierCell.id.substr(
                     tierCell.id.indexOf('_') + 1, tierCell.id.length)
@@ -107,7 +107,6 @@ showAddTierDialog = function(tier){
                     }))
         }
         addTierForm.items.items[0].setValue(tier.getTierName())
-        addTierForm.items.items[1].fieldLabel = 'Swap with'
         addTierForm.items.items[1].setValue(null)
         addTierForm.items.items[2].setValue(tier.wipLimit)
         addTierDialog.isUpdate = tier
@@ -118,8 +117,9 @@ showAddTierDialog = function(tier){
                     'tierPosition': i,
                     'tierName': tiers[i].name
                 }))
-        }
+        }        
         addTierForm.items.items[0].setValue('')
+        addTierForm.items.items[1].setValue(null)
         addTierForm.items.items[2].setValue('')
         addTierDialog.isUpdate = null
     }

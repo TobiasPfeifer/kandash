@@ -1465,7 +1465,7 @@ a.x-menu-item {
 }
 
 .x-panel-header {
-    color:#fff;
+    color:white;
 	font-weight:bold; 
     font-size: 14px;
     font-family: tahoma,arial,verdana,sans-serif;
@@ -1582,7 +1582,7 @@ border-bottom-color:#222224;
 }
 
 .x-window-tl .x-window-header {
-    color:fff;
+    color:white;
 	font:bold 14px tahoma,arial,verdana,sans-serif;
 }
 
@@ -1813,6 +1813,7 @@ body.x-body-masked .x-window-plain .x-window-mc {
 .x-window-dlg .ext-mb-text,
 .x-window-dlg .x-window-header-text {
     font-size:15px;
+    color:white;
 }
 
 .x-window-dlg .ext-mb-textarea {

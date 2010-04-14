@@ -120,7 +120,7 @@ var updateTaskDialog = new Ext.Window({
                 task.setFormPriority(priority)
                 PUT(RESOURCES + RS_TASK, task.toJSON())
             }else{
-                debugger
+                
                 var projectId = form.getProject()
                 var tierId = board.tiers[board.tiers.length-1].id
                 if(board.getTasksPerTier(tierId).length >= board.boardGrid[projectId][tierId].getWipLimit()){

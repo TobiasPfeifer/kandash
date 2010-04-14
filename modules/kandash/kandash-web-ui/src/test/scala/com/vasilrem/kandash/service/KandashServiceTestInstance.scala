@@ -8,8 +8,8 @@ package com.vasilrem.kandash.service
 /**
  * Instance of Kandash service
  */
-object KandashServiceInstance extends KandashService{
+object KandashServiceTestInstance extends KandashService{
   val host = "localhost"
   val port = 27017
-  val database = "kandash"
+  val database = "kandash_test"
 }
