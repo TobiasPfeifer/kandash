@@ -86,6 +86,7 @@ object Task extends MongoDocumentMeta[Task] {
  * TaskUpdateFact represents any change of facts state (IOW, new fact is created
  * every time the tier is changed for a task)
  */
+@BeanInfo
 case class TaskUpdateFact(_id:String, taskId:String, tierId:String,
                           updateDate:Date) extends MongoDocument[TaskUpdateFact]{
   def meta = TaskUpdateFact
@@ -103,9 +104,38 @@ object TaskUpdateFact extends MongoDocumentMeta[TaskUpdateFact] {
 case class DashboardModel(_id:String, name:String, tiers:List[Tier], workflows:List[Workflow],
                           tasks:List[Task]) extends MongoDocument[DashboardModel]{
   def meta = DashboardModel
+
+  /**
+   * Gets "backlog" tier
+   */
+  def backlogTier: Tier = tiers.find(_.order == (tiers.length - 1)).get
+
+  /**
+   * Gets "done" tier
+   */
+  def doneTier: Tier = tiers.find(_.order == 0).get
+
+  /**
+   * Gets tier by specified order
+   * @val order order of the tier on the board (0 - done (last tier))
+   */
+  def getTierByOrder(order: Int): Tier = tiers.find(_.order == order).get
+
 }
 object DashboardModel extends MongoDocumentMeta[DashboardModel] {
   override def mongoIdentifier = DefaultMongoIdentifier
   override def collectionName = "dashboardmodels"
 }
+
+/**
+ * Task history encapsulates history of task updates
+ * @val task
+ * @val dateCreated date when task was created
+ * @val dateUpdated date when task was updated last time
+ * @val timeActive total time spent on task resolution (in millis)
+ * @val taskFacts list of all facts related to the tsk update
+ */
+@BeanInfo
+case class TaskHistory(task: Task, dateCreated: Date, dateUpdated: Date, 
+                       timeActive: Double, taskFacts: List[TaskUpdateFact])
 

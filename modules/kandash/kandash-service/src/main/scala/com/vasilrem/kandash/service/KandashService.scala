@@ -90,6 +90,21 @@ trait KandashService extends JObjectBuilder{
   }
 
   /**
+   * Adds task to the board
+   * @val boardId identifier of the board the task will be added to
+   * @val task task to be added
+   * @return task identifier
+   */
+  def addTask(boardId: String, task: Task): String = {    
+    val taskId = add[Task](boardId, task)
+    TaskUpdateFact(ObjectId.get.toString,
+                   taskId,
+                   task.tierId,
+                   new java.util.Date).save
+    taskId
+  }
+
+  /**
    * Adds a new tier to the board
    * @val boardId identifier of the board the tier will be added to
    * @val tier tier to be added
@@ -131,7 +146,7 @@ trait KandashService extends JObjectBuilder{
    * @return true, if task's tier was changed
    */
   def createFact(taskId: String, tierId: String):Boolean = {
-    val tierIsChanged: Boolean = 
+    val tierIsChanged: Boolean =
       DashboardModel.find(("tasks._id" -> taskId)).get.tasks.find {task => task._id == taskId && task.tierId == tierId} == None
     if(tierIsChanged) TaskUpdateFact(ObjectId.get.toString, taskId, tierId, new java.util.Date).save
     tierIsChanged
@@ -314,6 +329,14 @@ trait KandashService extends JObjectBuilder{
     val idField = document.getClass.getDeclaredField("_id")
     idField.setAccessible(true)
     idField.get(document).toString
+  }
+
+  /**
+   * Drops all collecitons related to KandashService
+   */
+  def dropAllCollections = {
+    DashboardModel.drop
+    TaskUpdateFact.drop
   }
 
 }
