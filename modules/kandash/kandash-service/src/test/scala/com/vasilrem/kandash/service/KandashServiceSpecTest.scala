@@ -1,4 +1,4 @@
-package com.vasilrem.ideabox
+package com.vasilrem.kandash.service
 
 import org.specs._
 import java.util.Date
@@ -7,13 +7,31 @@ import com.vasilrem.kandash.model._;
 import net.liftweb.json.JsonDSL._
 import com.mongodb.ObjectId
 import com.vasilrem.kandash.service._
+import com.vasilrem.kandash.mongo._
 
-class IdeaServiceSpecTest extends SpecificationWithJUnit {
+class KandashServiceSpecTest extends SpecificationWithJUnit {
+
+  val prepared = new PreparedFunction{
+    val host = "localhost"
+    val port = 27017
+    val database = "kandash_reporting"    
+  }
+  
 
   val kandashService = new KandashService{
     val host = "localhost"
     val port = 27017
     val database = "kandash_test"
+    val preparedFunction = prepared
+  }
+
+  doBefore{
+    kandashService.dropAllCollections
+    println("Model is dropped")
+  }
+
+  doBeforeSpec{
+    prepared.loadPreparedFunctions(List("/mongo/preparedFunctions.js"))
   }
 
   /**
@@ -32,14 +50,12 @@ class IdeaServiceSpecTest extends SpecificationWithJUnit {
     }
   }
 
-  def sampleTask =
-
-    "Create new board" in{
-      println("\r\n\r\n=====Create new board======")
-      val validID = kandashService.createNewDashboard("testDashboard")
-      println("""New dashboard "testDashboard" has been created with ID """ + validID)
-      validID must notBeNull
-    }
+  "Create new board" in{
+    println("\r\n\r\n=====Create new board======")
+    val validID = kandashService.createNewDashboard("testDashboard")
+    println("""New dashboard "testDashboard" has been created with ID """ + validID)
+    validID must notBeNull
+  }
 
   "Fatch board by ID" in{
     println("\r\n\r\n=====Fatch board by ID======")

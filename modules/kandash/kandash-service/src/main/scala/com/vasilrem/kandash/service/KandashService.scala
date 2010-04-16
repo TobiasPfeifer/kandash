@@ -11,6 +11,7 @@ import net.liftweb.json.JsonDSL._
 import net.liftweb.json.JsonAST._
 import net.liftweb.json._
 import com.mongodb._
+import com.vasilrem.kandash.mongo._
 
 /**
  * Represents high-level server-sede routing of the board
@@ -29,6 +30,8 @@ trait KandashService extends JObjectBuilder{
                                      new Tier(ObjectId.get.toString, "{tier.name.done}", 0, None))
   /** workflows (projects) added to the new board by default */
   val defaultWorkflows:List[Workflow] = List(new Workflow(ObjectId.get.toString, "workflow.name.default"))
+
+  val preparedFunction:PreparedFunction
 
   /** instantiates new connection to mongo */
   MongoDB.defineDb(DefaultMongoIdentifier, MongoAddress(MongoHost(host, port), database))
@@ -201,21 +204,8 @@ trait KandashService extends JObjectBuilder{
    * @param isInc if true, order number will be increased
    */
   def updateTiersOrder(boardId: String, startingFromOrder: Int, isInc: Boolean) = {
-    MongoDB.use(DefaultMongoIdentifier) ( db => {
-        val sign = if(isInc){"+"} else {"-"}
-        db.eval(""" function() {
-                  db.dashboardmodels.find({'_id' : ObjectId('""" + boardId + """')}).forEach(
-                    function(o){
-                      for(var i=0;i<o.tiers.length;i++){
-                        var tier=o.tiers[i];
-                        if(tier.order>""" + startingFromOrder + """){
-                          tier.order""" + sign + """=1;
-                        }
-                      }
-                    db.dashboardmodels.save(o);
-                  })
-                }""")
-      })
+    val incrementor = if(isInc) 1 else -1
+    preparedFunction.call("updateTiersOrder('" + boardId + "', " + startingFromOrder + ", " + incrementor + ")")
   }
 
   /**
@@ -224,33 +214,7 @@ trait KandashService extends JObjectBuilder{
    * @param order new tier order value
    */
   def changeTierOrder(tierId: String, order: Int) = {
-    MongoDB.use(DefaultMongoIdentifier) ( db => {
-        db.eval(""" function() {
-                  db.dashboardmodels.find({'tiers._id' : ObjectId('""" + tierId + """')}).forEach(
-                    function(o){
-                      var sourceIndex
-                      var targetIndex
-                      var sourceOrder
-                      for(var i=0;i<o.tiers.length;i++){
-                        var tier=o.tiers[i];
-                        if(tier._id.toString() == '""" + tierId + """'){
-                          sourceIndex = i
-                          sourceOrder = tier.order
-                        }
-                        if(tier.order == """ + order + """){
-                          targetIndex = i
-                        }
-                      }
-                      print('targetIndex = ' + targetIndex)
-                      print('sourceIndex = ' + sourceIndex)
-                      print('order = ' + """ + order + """)
-                      print('sourceOrder = ' + sourceOrder)
-                      o.tiers[targetIndex].order = sourceOrder
-                      o.tiers[sourceIndex].order = """ + order + """
-                      db.dashboardmodels.save(o);
-                  })
-                }""")
-      })
+    preparedFunction.call("changeTierOrder('" + tierId + "', " + order + ")")
   }
 
   /**
@@ -282,10 +246,7 @@ trait KandashService extends JObjectBuilder{
                   db.dashboardmodels.find({'""" + collectionType + """._id' : ObjectId('""" + containerId + """')}).forEach(
                     function(o){
                       for(var i=(o.tasks.length - 1);i>=0;i--){
-                        print('Task ref ID: ' + o.tasks[i].""" + containerRefId + """.toString())
-                        print('Container ID: """ + containerId + """')
                         if(o.tasks[i].""" + containerRefId + """.toString() == '""" + containerId + """'){
-                          print('Removing ' + o.tasks[i]._id)
                           o.tasks.splice(i, 1);
                         }
                       }
