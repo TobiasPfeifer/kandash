@@ -368,8 +368,8 @@ class KandashServiceSpecTest extends SpecificationWithJUnit {
                                                      dashboard.workflows.last._id))
       println("Added task " + taskId + " to board " + boardId)
       println("Setting tier " + dashboard.tiers.first._id)
-      kandashService.createFact(taskId, dashboard.tiers.first._id) must beTrue
-      kandashService.createFact(taskId, dashboard.tiers.last._id) must beFalse
+      kandashService.createFact(taskId, dashboard.workflows.last._id, dashboard.tiers.first._id) must beTrue
+      kandashService.createFact(taskId, dashboard.workflows.last._id, dashboard.tiers.last._id) must beFalse
     }
   }
 

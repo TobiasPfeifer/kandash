@@ -50,7 +50,7 @@ class ReportingServiceSpecTest extends SpecificationWithJUnit {
              projectId)
 
   doBeforeSpec{
-    kandashService.dropAllCollections    
+    kandashService.dropAllCollections
     println("Model is dropped")
     prepared.loadPreparedFunctions(List("/mongo/preparedFunctions.js"))
     val board = kandashService.createDummyDashboard("reporting")
@@ -80,7 +80,7 @@ class ReportingServiceSpecTest extends SpecificationWithJUnit {
                                           board.doneTier._id))
     }
     println("Completed tasks are defined")
-    println("Dummy board is created")    
+    println("Dummy board is created")
   }
 
   "Completed task should have 3 related facts (for each changed tier)" in{

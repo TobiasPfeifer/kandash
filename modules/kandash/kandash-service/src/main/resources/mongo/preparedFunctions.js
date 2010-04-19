@@ -12,10 +12,36 @@ test = function(string){
  * @param date UTC date string
  * @return javascript date
  */
-getMillis = function(date){
+convertToJSDate = function(date){
     var d = date.match(/^(\d{4})-(\d{2})-(\d{2})[T ](\d{2}):(\d{2}):(\d{2}(?:\.\d+)?)(Z|(([+-])(\d{2}):(\d{2})))$/i);
-    return new Date(Date.UTC(d[1],d[2]-1,d[3],d[4],d[5],d[6]|0,(d[6]*1000-((d[6]|0)*1000))|0,d[7]) + (d[7].toUpperCase() ==="Z" ? 0 : (d[10]*3600 + d[11]*60) * (d[9]==="-" ? 1000 : -1000))).getTime()
+    return new Date(Date.UTC(d[1],d[2] - 1,d[3],d[4],d[5],d[6]|0,(d[6]*1000-((d[6]|0)*1000))|0,d[7]) + (d[7].toUpperCase() ==="Z" ? 0 : (d[10]*3600 + d[11]*60) * (d[9]==="-" ? 1000 : -1000)))
 }
+
+/**
+ * Converts JS date to UTC array
+ * @param D Javascript date
+ * @return UTC array
+ **/
+toUTCArray= function(D){
+    return [D.getUTCFullYear(), D.getUTCMonth(), D.getUTCDate(), 0,
+    0, 0];
+}
+
+/**
+ * Converts Javascript date to UTC string
+ * @param date Javascript date
+ * @return formatted UTC-date
+ **/
+toISO= function(date){
+    var tem, A= toUTCArray(date), i= 0;
+    A[1]+= 1;
+    while(i++<7){
+        tem= A[i];
+        if(tem<10) A[i]= '0'+tem;
+    }
+    return A.splice(0, 3).join('-')+'T'+A.join(':') + '.000Z';
+}
+
 
 /**
  * Gets task history for limited period
@@ -75,7 +101,7 @@ getTaskHistory = function(taskIdString, upperDateBound, lowerDateBound){
         var fact = facts[i]
         taskHistory.taskFacts[i] = fact
         if(prevDate){
-            taskHistory.timeActive += (getMillis(fact.updateDate) - getMillis(prevDate))
+            taskHistory.timeActive += (convertToJSDate(fact.updateDate).getTime() - convertToJSDate(prevDate).gteTime())
         }
         if(fact.tierId.toString() != backlogTier && fact.tierId.toString() != doneTier){
             prevDate = fact.updateDate
@@ -134,4 +160,91 @@ updateTiersOrder = function(boardId, startingFromOrder, incrementor) {
             }
             db.dashboardmodels.save(o);
         })
+}
+
+/**
+ * Adds new point to the chart model
+ * @param chartModel chart model
+ * @param tierIds board model tiers
+ * @param projectId project identifier
+ * @param lowerBound lower date filtering bound
+ * @param middleBound upper date filtering bound
+ **/
+addChartPoint = function(chartModel, tierIds, projectId, lowerBound, middleBound){
+    chartModel.points[chartModel.points.length] = {
+        date : toISO(new Date(middleBound))
+    }
+    chartModel.points[chartModel.points.length - 1].tiers = new Array()
+    var tiers = chartModel.points[chartModel.points.length - 1].tiers
+    tierIds.forEach(function(tier){
+        var tierId = tier._id
+        tiers[tiers.length] = {
+            tierId: tierId,
+            tierName: tier.name
+        }
+        print('Counting for ' + toISO(lowerBound) + ' - ' + toISO(middleBound) + '. Tier ' + tier.name)
+        var searchMask = {
+            tierId: tierId,
+            updateDate : {
+                $gt:toISO(lowerBound),
+                $lt:toISO(middleBound)
+            }
+        }
+        if(projectId){
+            searchMask.workflowId = ObjectId(projectId)
+        }
+        tiers[tiers.length - 1].count = db.taskupdatefacts.find(searchMask).length()
+    })
+}
+
+/**
+ * Builds model for the cumulative flow chart
+ * @param boardId board identifier the chart will be built for
+ * @param scale chart scale (0=day/1=week/2=month)
+ * @param projectId identifier of the project the chart will be built for
+ * (for all projects, of not specified)
+ * @return chart model
+ */
+buildChartModel = function(boardId, scale, projectId) {
+    var chartModel = new Object()
+    var searchMask = projectId?{
+        'workflowId': ObjectId(projectId)
+    }:{}
+
+    var board = db.dashboardmodels.findOne({
+        _id: ObjectId(boardId)
+    }, {
+        tiers: true
+    })
+
+    var tierIds = board.tiers
+
+    chartModel.lowerBound = convertToJSDate(db.taskupdatefacts.find(searchMask, {
+        updateDate: 1
+        }).sort({
+        updateDate: 1
+        }).limit(1)[0].updateDate)
+    chartModel.upperBound = new Date()
+    chartModel.points = new Array()
+    var lowerBound = new Date(chartModel.lowerBound)
+    var middleBound = new Date(chartModel.lowerBound)
+    while(middleBound < chartModel.upperBound){        
+        addChartPoint(chartModel, tierIds, projectId, lowerBound, middleBound)
+        lowerBound = new Date(middleBound)
+        switch(scale){
+            case 0:
+                middleBound.setDate(middleBound.getDate() + 1)
+                break;
+            case 1:
+                middleBound.setDate(middleBound.getDate() + 7)
+                break;
+            case 2:
+                middleBound.setMonth(middleBound.getMonth() + 1)
+                break;
+        }
+    }
+    addChartPoint(chartModel, tierIds, projectId, lowerBound, chartModel.upperBound)
+    chartModel.lowerBound = toISO(chartModel.lowerBound)
+    chartModel.upperBound = toISO(chartModel.upperBound)
+    return chartModel
 }

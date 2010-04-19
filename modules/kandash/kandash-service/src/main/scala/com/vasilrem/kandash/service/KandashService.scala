@@ -102,6 +102,7 @@ trait KandashService extends JObjectBuilder{
     val taskId = add[Task](boardId, task)
     TaskUpdateFact(ObjectId.get.toString,
                    taskId,
+                   task.workflowId, 
                    task.tierId,
                    new java.util.Date).save
     taskId
@@ -138,20 +139,21 @@ trait KandashService extends JObjectBuilder{
    * @return task identifier
    */
   def updateTask(task:Task): String = {
-    createFact(task._id, task.tierId)
+    createFact(task._id, task.workflowId, task.tierId)
     update[Task](task)
   }
 
   /**
    * Creates new fact based on changing the task's tier (state)
    * @val taskId identifier of the task
+   * @val workflowId identifier of the project the task is assigned to
    * @val tierId identifier if the new task's tier (state)
    * @return true, if task's tier was changed
    */
-  def createFact(taskId: String, tierId: String):Boolean = {
-    val tierIsChanged: Boolean =
-      DashboardModel.find(("tasks._id" -> taskId)).get.tasks.find {task => task._id == taskId && task.tierId == tierId} == None
-    if(tierIsChanged) TaskUpdateFact(ObjectId.get.toString, taskId, tierId, new java.util.Date).save
+  def createFact(taskId: String, workflowId: String, tierId: String):Boolean = {
+    val task = DashboardModel.find(("tasks._id" -> taskId)).get.tasks.find{task => task._id == taskId}.get
+    val tierIsChanged: Boolean = task.tierId != tierId
+    if(tierIsChanged) TaskUpdateFact(ObjectId.get.toString, taskId, task.workflowId, tierId, new java.util.Date).save
     tierIsChanged
   }
 
@@ -236,7 +238,8 @@ trait KandashService extends JObjectBuilder{
   }
 
   /**
-   * Removes all tasks assigned to tier, project or any other container
+   * Removes all tasks assigned to the tier, project or any other container
+   * @param containerId container identifier
    * @param collectionType collection type of the container
    */
   def removeTasksFromContainer(containerId: String, collectionType: String) = {

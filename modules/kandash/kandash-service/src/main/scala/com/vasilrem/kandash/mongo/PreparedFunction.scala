@@ -77,6 +77,7 @@ trait PreparedFunction {
    */
   def call(functionCall: String): Object = {
     var ret:Object = null
+    println("Calling " + functionCall)
     MongoDB.use(DefaultMongoIdentifier) ( db => {
         ret = db.eval("db.eval(\"" + functionCall + "\")")
       }

@@ -87,7 +87,7 @@ object Task extends MongoDocumentMeta[Task] {
  * every time the tier is changed for a task)
  */
 @BeanInfo
-case class TaskUpdateFact(_id:String, taskId:String, tierId:String,
+case class TaskUpdateFact(_id:String, taskId:String, workflowId: String, tierId:String,
                           updateDate:Date) extends MongoDocument[TaskUpdateFact]{
   def meta = TaskUpdateFact
 }
@@ -139,3 +139,27 @@ object DashboardModel extends MongoDocumentMeta[DashboardModel] {
 case class TaskHistory(task: Task, dateCreated: Date, dateUpdated: Date, 
                        timeActive: Double, taskFacts: List[TaskUpdateFact])
 
+/**
+ * Represents cumulative flow chart model
+ * @val lowerBound specifies lower date bound for the facts filtering
+ * @val upperBound specifies upper date bound for the facts filtering
+ * @val points points on the chart
+ */
+@BeanInfo
+case class ChartModel(lowerBound: Date, upperBound: Date, points: List[ChartPoints])
+
+/**
+ * Represents group of chart points (association of the data and count of tasks
+ * assigned during the specified period per tier)
+ * @val date date on the chart
+ * @val tiers association of the data and count of tasks
+ * completed during the specified period per tier
+ */
+@BeanInfo
+case class ChartPoints(date: Date, tiers: List[ChartPoint])
+
+/**
+ * Represents single point on the chart. Cound of tasks assigned per specified tier
+ */
+@BeanInfo
+case class ChartPoint(tierId: String, tierName: String, count: Double)

@@ -3,8 +3,9 @@
  * and open the template in the editor.
  */
 
-package com.vasilrem.kandash.mongo
+package com.vasilrem.kandash.service
 
+import org.specs._
 import com.eltimn.scamongo._;
 import com.vasilrem.kandash.model._;
 import net.liftweb.json.JsonDSL._
@@ -16,39 +17,46 @@ import java.io._
 import java.util.Calendar
 import java.text.SimpleDateFormat
 
-object NewMain {
+class ChartModelSpecTest extends SpecificationWithJUnit {
 
-  def main(args: Array[String]): Unit = {
+  val prepared = new PreparedFunction{
+    val host = "localhost"
+    val port = 27017
+    val database = "chart"
+  }
 
-    val prepared = new PreparedFunction{
-      val host = "localhost"
-      val port = 27017
-      val database = "kandash"
-    }
+  val reportingService = new ReportingService{
+    val host = "localhost"
+    val port = 27017
+    val database = "chart"
+    val preparedFunction = prepared
+  }
 
-    val kandashService = new KandashService{
-      val host = "localhost"
-      val port = 27017
-      val database = "kandash"
-      val preparedFunction = prepared
-    }
+  val kandashService = new KandashService{
+    val host = "localhost"
+    val port = 27017
+    val database = "chart"
+    val preparedFunction = prepared
+  }
 
-    def NewTask(taskID: String, workflowId: String, tierId: String) =
-      new Task(taskID,
-               new Some("unknown"),
-               "Test Task",
-               new Some(5),
-               new Some("unknown"),
-               50,
-               50,
-               new Some(100),
-               1,
-               tierId,
-               workflowId)
+  def NewTask(taskID: String, workflowId: String, tierId: String) =
+    new Task(taskID,
+             new Some("unknown"),
+             "Test Task",
+             new Some(5),
+             new Some("unknown"),
+             50,
+             50,
+             new Some(100),
+             1,
+             tierId,
+             workflowId)
 
-    MongoDB.defineDb(DefaultMongoIdentifier, MongoAddress(MongoHost("localhost", 27017), "kandash"))
+  doBeforeSpec{
+    MongoDB.defineDb(DefaultMongoIdentifier, MongoAddress(MongoHost("localhost", 27017), "chart"))
     TaskUpdateFact.drop
     DashboardModel.drop
+    prepared.loadPreparedFunctions(List("/mongo/preparedFunctions.js"))
     val cal = Calendar.getInstance
     cal.set(Calendar.YEAR, 2010)
     val boardId = kandashService.createNewDashboard("chart")
@@ -72,6 +80,17 @@ object NewMain {
         TaskUpdateFact(taskId, ObjectId.get.toString, projectId, board.tiers.apply(1)._id, date).save
       }
     }
+    println("Dummy board is created")
+    println("Dummy facts are created")
   }
 
+  "Monthly chart model for the specified data" should {
+    "contain more than one group of chart poins" in{
+      val board = kandashService.getDashboardByName("chart")
+      val chartModel = reportingService.getMonthlyChartModel(board._id, None)
+      print("Chart model: " + chartModel)
+      chartModel.points.length must beGreaterThan(0)
+    }
+  }
+  
 }
