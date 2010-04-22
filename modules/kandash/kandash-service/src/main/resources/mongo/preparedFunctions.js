@@ -94,6 +94,11 @@ getReportModel = function(boardId, query){
         '_id': ObjectId(boardId)
     })
     query.boardId = board._id
+    for(criterion in query){
+        if(query[criterion].match && !query[criterion].match(/(ObjectId\(\'([a-z0-9]+)\'\)|([0-9]+-[0-9]+-[0-9]+T[0-9][0-9]))/gi)){
+            query[criterion] = new RegExp(query[criterion], "gi")
+        }
+    }
     db.taskupdatefacts.find(query).forEach(
         function(taskFact){
             var task = taskFact.task

@@ -47,16 +47,14 @@ object WorkflowChartModel {
                workflowId)
 
     MongoDB.defineDb(DefaultMongoIdentifier, MongoAddress(MongoHost("localhost", 27017), "kandash"))
-    TaskUpdateFact.drop
-    DashboardModel.drop
-    ChartPointGroup.drop
     val cal = Calendar.getInstance
     cal.set(Calendar.YEAR, 2010)
     cal.set(Calendar.HOUR_OF_DAY, 0)
     cal.set(Calendar.MINUTE, 0)
     cal.set(Calendar.SECOND, 0)
-    val boardId = kandashService.createNewDashboard("kandash")
-    val board = kandashService.getDashboardById(boardId)
+    //val boardId = kandashService.createNewDashboard("kandash")
+    val board = kandashService.getDashboardByName("kandash")
+    val boardId = board._id
     val projectId = board.workflows.first._id
     val random = new java.util.Random
     var backlogCount = 0

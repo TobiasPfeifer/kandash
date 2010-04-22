@@ -10,7 +10,7 @@ var filterForm = new Ext.form.FormPanel({
     defaultType: 'textfield',
     items: [{
         fieldLabel: 'Task',
-        name: 'task.name',
+        name: 'task.description',
         anchor: '100%'
     },new Ext.form.ComboBox({
         fieldLabel: 'Project',
@@ -19,6 +19,7 @@ var filterForm = new Ext.form.FormPanel({
         displayField:'taskProject',
         name: 'task.workflowId',
         typeAhead: true,
+        idField: true,
         mode: 'local',
         triggerAction: 'all',
         emptyText:'Choose the project...',
@@ -28,6 +29,7 @@ var filterForm = new Ext.form.FormPanel({
         fieldLabel: 'State',
         hiddenName:'tier',
         valueField:'tierId',
+        idField: true,
         displayField:'tier',
         name: 'task.tierId',
         typeAhead: true,
@@ -39,7 +41,6 @@ var filterForm = new Ext.form.FormPanel({
     }),{
         fieldLabel: 'Assignee',
         name: 'task.assigneeId',
-        name: 'assignee',
         anchor: '100%'
     }]
 })
@@ -60,16 +61,14 @@ var filterDialog = new Ext.Window({
         text: 'Filter',
         type: 'submit',
         handler: function(){
-            var filter
-            debugger
+            var filter = new Object()
             Ext.getCmp('filter').items.items.forEach(function(item){
-                debugger
-                if(item.getValue())
-                    filter[item.name] = item.getValue()
+                var value = item.getValue()
+                if(value){
+                    if(item.idField) value = 'ObjectId(\'' + value + '\')'
+                    filter[item.name] = value
+                }
             })
-            /*filter['task.name'] = new RegExp(items[0].getValue())
-            if(items[1].getValue())
-            filter['task.workflowId'] = items[1].getValue()*/
             filterDialog.callbackFunction(filter)
             filterDialog.hide()
         }
@@ -82,7 +81,6 @@ var filterDialog = new Ext.Window({
 });
 
 showFilterDialog = function(board, callbackFunction){
-    debugger
     filterDialog.callbackFunction = callbackFunction
     filterForm.items.items[1].store = new Ext.data.SimpleStore({
         fields: ['taskProjectId', 'taskProject']

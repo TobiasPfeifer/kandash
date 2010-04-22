@@ -50,6 +50,9 @@ object HistoryChartModel {
     prepared.loadPreparedFunctions(List("/mongo/preparedFunctions.js"))
     val cal = Calendar.getInstance
     cal.set(Calendar.YEAR, 2010)
+    TaskUpdateFact.drop
+    DashboardModel.drop
+    ChartPointGroup.drop
     kandashService.createNewDashboard("kandash")
     val board = kandashService.getDashboardByName("kandash")
     val boardId = board._id

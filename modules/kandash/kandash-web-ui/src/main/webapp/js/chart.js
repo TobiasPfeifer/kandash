@@ -144,7 +144,7 @@ Ext.onReady(function(){
                         text: 'Filter',
                         type: 'filter',
                         handler: function(){
-                            showFilterDialog(function(query){
+                            showFilterDialog(board, function(query){
                                 if(query){
                                     initReportForRange(board, query)
                                 }
@@ -173,47 +173,39 @@ Ext.onReady(function(){
                         }, {
                             header: 'Task',
                             width: 160,
-                            id:'task',
-                            sortable: true
+                            id:'task'
                         },
                         {
                             header: 'Project',
                             width: 75,
-                            hidden: true,
-                            sortable: true
+                            hidden: true
                         },
                         {
                             header: 'State',
                             width: 75,
-                            hidden: true,
-                            sortable: true
+                            hidden: true
                         },
                         {
                             header: 'Assignee',
-                            width: 75,
-                            sortable: true
+                            width: 75
                         },
                         {
                             header: 'Estimated Time',
-                            width: 75,
-                            sortable: true
+                            width: 75
                         },
                         {
                             header: 'Time Active',
-                            width: 75,
-                            sortable: true
+                            width: 75
                         },
                         {
                             header: 'Date Created',
                             width: 75,
-                            hidden: true,
-                            sortable: true
+                            hidden: true
                         },
                         {
                             header: 'Date Updated',
                             width: 75,
-                            hidden: true,
-                            sortable: true
+                            hidden: true
                         }
                         ],
                         stripeRows: true,
@@ -334,7 +326,10 @@ Ext.onReady(function(){
 
     function initDateRange(startDate, endDate){
         updateReport = function(){
-            initReport(board, Ext.getCmp('startdt').getValue(), Ext.getCmp('enddt').getValue())
+            if(board.lastQuery)
+                initReportForRange(board, board.lastQuery)
+            else
+                initReport(board, Ext.getCmp('startdt').getValue(), Ext.getCmp('enddt').getValue())
         }
         Ext.getCmp('startdt').setValue(startDate)
         Ext.getCmp('startdt').on('select', updateReport)
@@ -356,11 +351,11 @@ Ext.onReady(function(){
     }
 
     function initReportForRange(board, query){
-        debugger
         initReport(board,
             Ext.getCmp('startdt').getValue(),
             Ext.getCmp('enddt').getValue(),
             query)
+        board.lastQuery = query
     }
 
     function initReport(board, fromDate, toDate, query){
@@ -370,10 +365,10 @@ Ext.onReady(function(){
             $gt: fromDate,
             $lt: toDate
         }
-        debugger
+        var encodedQuery = Ext.encode(query).replace(/"ObjectId\(\'([a-z0-9]+)\'\)\"/gi, 'ObjectId(\'$1\')')
         var reportModel = Ext.decode(GET(RESOURCES + RS_REPORTMODEL
             + '/' + board._id
-            + '/' + Ext.encode(query)))
+            + '/' + encodedQuery))
         reportModel.taskHistoryEntries.forEach(function(entry, i){
             var task = entry.taskFact.task
             data[data.length] = [task._id,
