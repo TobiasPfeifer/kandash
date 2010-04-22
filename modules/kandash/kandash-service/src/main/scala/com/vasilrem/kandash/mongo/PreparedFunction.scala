@@ -55,13 +55,14 @@ trait PreparedFunction {
       resourceName =>
       val fileContent = new FileBulkReader(new File(getClass().getResource(resourceName).getFile)).read
       MongoDB.use(DefaultMongoIdentifier) ( db => {
+          db.eval("db.system.js.remove()")
           db.eval(
             fileContent
           )
           ("(.*)=[ ]+function".r findAllIn fileContent).matchData foreach {
             matchedFunction => {
               val functionName = matchedFunction.group(1).trim
-              println("Preparing function " + functionName)
+              println("Preparing function " + functionName)              
               db.eval("db.system.js.save({_id: '" + functionName + "', value: " + functionName + "})")
             }
           }

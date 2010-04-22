@@ -210,6 +210,7 @@
     },
 
     setTipRenderer : function(fn){
+        debugger
         var chart = this;
         this.tipFnName = this.createFnProxy(function(item, index, series){
             var record = chart.store.getAt(index);
@@ -219,6 +220,7 @@
     },
 
     setSeries : function(series){
+        debugger
         this.series = series;
         this.refresh();
     },

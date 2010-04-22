@@ -61,24 +61,25 @@ Ext.onReady(function(){
         ]
     });
 
+    Ext.Ajax.request({
+        headers : {
+            'X-HTTP-Method-Override' : 'GET'
+        },
+        method: 'GET',
+        url: 'resources/boards',
+        success: function(response) {
+
+            var boards = Ext.decode(response.responseText)
+            for(var i=0; i<boards.length; i++){
+                var board = boards[i]
+                Ext.getCmp('boardList').items.items[0].store.add(
+                    new Ext.data.Record({
+                        'boardId': board._id,
+                        'board': board.name
+                    }))
+            }
+        }
+    });
+
 });
 
-Ext.Ajax.request({
-    headers : {
-        'X-HTTP-Method-Override' : 'GET'
-    },
-    method: 'GET',
-    url: 'resources/boards',
-    success: function(response) {
-        
-        var boards = Ext.decode(response.responseText)
-        for(var i=0; i<boards.length; i++){
-            var board = boards[i]
-            Ext.getCmp('boardList').items.items[0].store.add(
-                new Ext.data.Record({
-                    'boardId': board._id,
-                    'board': board.name
-                }))
-        }
-    }
-});

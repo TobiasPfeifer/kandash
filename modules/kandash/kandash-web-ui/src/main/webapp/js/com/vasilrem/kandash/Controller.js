@@ -8,6 +8,7 @@ const RS_PROJECT = "/project"
 const RS_TIER = "/tier"
 const RS_TASK = "/task"
 const RS_BOARD = "/board"
+const RS_REPORTMODEL = "/reportmodel"
 
 /**
  * Performs POST at given URL with passed parameters

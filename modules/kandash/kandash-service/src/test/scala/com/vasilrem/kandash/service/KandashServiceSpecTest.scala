@@ -14,20 +14,14 @@ class KandashServiceSpecTest extends SpecificationWithJUnit {
   val prepared = new PreparedFunction{
     val host = "localhost"
     val port = 27017
-    val database = "kandash_reporting"    
+    val database = "kandash_test"
   }
-  
 
   val kandashService = new KandashService{
     val host = "localhost"
     val port = 27017
     val database = "kandash_test"
     val preparedFunction = prepared
-  }
-
-  doBefore{
-    kandashService.dropAllCollections
-    println("Model is dropped")
   }
 
   doBeforeSpec{
@@ -354,22 +348,40 @@ class KandashServiceSpecTest extends SpecificationWithJUnit {
       println("\r\n\r\n=====Changed fact's tier======")
       val boardId = kandashService.createNewDashboard("testDashboard")
       val dashboard = kandashService.getDashboardById(boardId)
-      val taskId = kandashService.add[Task](boardId,
-                                            new Task(null,
-                                                     new Some("unknown"),
-                                                     "Test Task",
-                                                     new Some(5),
-                                                     new Some("unknown"),
-                                                     50,
-                                                     50,
-                                                     new Some(100),
-                                                     1,
-                                                     dashboard.tiers.last._id,
-                                                     dashboard.workflows.last._id))
-      println("Added task " + taskId + " to board " + boardId)
+      val taskId = kandashService.add[Task](boardId, new Task(null,
+                                                              new Some("unknown"),
+                                                              "Test Task",
+                                                              new Some(5),
+                                                              new Some("unknown"),
+                                                              50,
+                                                              50,
+                                                              new Some(100),
+                                                              1,
+                                                              dashboard.tiers.last._id,
+                                                              dashboard.workflows.last._id))
       println("Setting tier " + dashboard.tiers.first._id)
-      kandashService.createFact(taskId, dashboard.workflows.last._id, dashboard.tiers.first._id) must beTrue
-      kandashService.createFact(taskId, dashboard.workflows.last._id, dashboard.tiers.last._id) must beFalse
+      kandashService.createFact(new Task(taskId,
+                                         new Some("unknown"),
+                                         "Test Task",
+                                         new Some(5),
+                                         new Some("unknown"),
+                                         50,
+                                         50,
+                                         new Some(100),
+                                         1,
+                                         dashboard.tiers.last._id,
+                                         dashboard.workflows.last._id)) must beFalse
+      kandashService.createFact(new Task(taskId,
+                                         new Some("unknown"),
+                                         "Test Task",
+                                         new Some(5),
+                                         new Some("unknown"),
+                                         50,
+                                         50,
+                                         new Some(100),
+                                         1,
+                                         dashboard.tiers.first._id,
+                                         dashboard.workflows.last._id)) must beTrue
     }
   }
 

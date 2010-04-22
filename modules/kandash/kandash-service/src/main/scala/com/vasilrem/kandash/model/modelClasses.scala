@@ -87,8 +87,7 @@ object Task extends MongoDocumentMeta[Task] {
  * every time the tier is changed for a task)
  */
 @BeanInfo
-case class TaskUpdateFact(_id:String, taskId:String, workflowId: String, tierId:String,
-                          updateDate:Date) extends MongoDocument[TaskUpdateFact]{
+case class TaskUpdateFact(_id:String, boardId: String, task:Task, updateDate:Date) extends MongoDocument[TaskUpdateFact]{
   def meta = TaskUpdateFact
 }
 object TaskUpdateFact extends MongoDocumentMeta[TaskUpdateFact] {
@@ -128,38 +127,47 @@ object DashboardModel extends MongoDocumentMeta[DashboardModel] {
 }
 
 /**
- * Task history encapsulates history of task updates
- * @val task
- * @val dateCreated date when task was created
- * @val dateUpdated date when task was updated last time
- * @val timeActive total time spent on task resolution (in millis)
- * @val taskFacts list of all facts related to the tsk update
+ * Represents report model based on task modifications
+ * @val reportModelRecords list of model records
  */
 @BeanInfo
-case class TaskHistory(task: Task, dateCreated: Date, dateUpdated: Date, 
-                       timeActive: Double, taskFacts: List[TaskUpdateFact])
+case class ReportModel(taskHistoryEntries: List[ReportModelRecord])
+
+@BeanInfo
+case class ReportModelRecord(taskFact: TaskUpdateFact, workflow: Workflow, tier: Tier, taskCreated: Date, daysActive: Double)
 
 /**
- * Represents cumulative flow chart model
- * @val lowerBound specifies lower date bound for the facts filtering
- * @val upperBound specifies upper date bound for the facts filtering
- * @val points points on the chart
+ * Chart model consisting of chart point groups
+ * @val chartGroups groups of chart points
  */
 @BeanInfo
-case class ChartModel(lowerBound: Date, upperBound: Date, points: List[ChartPoints])
+case class ChartModel(chartGroups: List[ChartPointGroup])
 
 /**
  * Represents group of chart points (association of the data and count of tasks
  * assigned during the specified period per tier)
+ * @val workflowId identifier of the workflow
  * @val date date on the chart
  * @val tiers association of the data and count of tasks
  * completed during the specified period per tier
  */
 @BeanInfo
-case class ChartPoints(date: Date, tiers: List[ChartPoint])
+case class ChartPointGroup(_id:String, workflowId: String, date: Date, tiers: List[ChartPoint]) extends MongoDocument[ChartPointGroup]{
+  def meta = ChartPointGroup
+}
+object ChartPointGroup extends MongoDocumentMeta[ChartPointGroup] {
+  override def mongoIdentifier = DefaultMongoIdentifier
+  override def collectionName = "chartpointgroups"
+}
 
 /**
  * Represents single point on the chart. Cound of tasks assigned per specified tier
  */
 @BeanInfo
-case class ChartPoint(tierId: String, tierName: String, count: Double)
+case class ChartPoint(_id: String, tierId: String, tierName: String, count: Double) extends MongoDocument[ChartPoint]{
+  def meta = ChartPoint
+}
+object ChartPoint extends MongoDocumentMeta[ChartPoint] {
+  override def mongoIdentifier = DefaultMongoIdentifier
+  override def collectionName = "chartpoints"
+}

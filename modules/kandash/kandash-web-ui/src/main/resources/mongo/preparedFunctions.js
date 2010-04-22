@@ -42,77 +42,79 @@ toISO= function(date){
     return A.splice(0, 3).join('-')+'T'+A.join(':') + '.000Z';
 }
 
-
-/**
- * Gets task history for limited period
- * @param taskIdString task identifier
- * @param upperDateBound upper date bound for filtering
- * @param lowerDateBound upper date bound for filtering
- * @return list of history records
- */
-getTaskHistory = function(taskIdString, upperDateBound, lowerDateBound){
-    var taskHistory = new Object()
-    taskHistory.taskFacts = new Array()
-    var taskId = ObjectId(taskIdString)
-    var facts = db.taskupdatefacts.find({
-        taskId : taskId,
-        updateDate:{
-            $gt: lowerDateBound,
-            $lt: upperDateBound
+getProjectById = function(board, projectId){
+    var project
+    board.workflows.forEach(function(workflow){
+        if(workflow._id.toString() == projectId){
+            project = workflow
         }
-    }).sort({
-        updateDate:1
     })
-    taskHistory.dateCreated = db.taskupdatefacts.find({
-        taskId : taskId
+    return project
+}
+
+getTierById = function(board, tierId){
+    var tier
+    board.tiers.forEach(function(t){
+        if(t._id.toString() == tierId.toString()){
+            tier = t
+        }
+    })
+    print('tier: ' + tier)
+    return tier
+}
+
+getTaskCreationDate = function(taskId){
+    return db.taskupdatefacts.find({
+        'task._id' : taskId
         }, {
         updateDate:1
         }).sort({
         updateDate:1
         }).limit(1)[0].updateDate
-    taskHistory.dateUpdated = db.taskupdatefacts.find({
-        taskId : taskId
+}
+
+getTaskLastUpdateDate = function(taskId){
+    return db.taskupdatefacts.find({
+        'task._id' : taskId
         }, {
         updateDate:1
         }).sort({
         updateDate:-1
         }).limit(1)[0].updateDate
-    var backlogTier
-    var doneTier
-    var board = db.dashboardmodels.findOne({
-        'tasks._id' : taskId
-    })
-    board.tasks.forEach(function(task){
-        if(task._id.toString == taskId.toString){
-            taskHistory.task = task
-        }
-    })
-    board.tiers.forEach(function(tier){
-        if(tier.order == 0){
-            doneTier = tier._id
-        }
-        if(tier.order == (board.tiers.length - 1)){
-            backlogTier = tier._id
-        }
-    })
-    taskHistory.timeActive = 0
-    var prevDate
-    for(var i=0; i<facts.length(); i++){
-        var fact = facts[i]
-        taskHistory.taskFacts[i] = fact
-        if(prevDate){
-            taskHistory.timeActive += (convertToJSDate(fact.updateDate).getTime() - convertToJSDate(prevDate).gteTime())
-        }
-        if(fact.tierId.toString() != backlogTier && fact.tierId.toString() != doneTier){
-            prevDate = fact.updateDate
-        }else{
-            prevDate = null
-        }
-    }
-    return taskHistory
 }
 
 /**
+ * Builds basic report model
+ * @param boardId
+ * @param query search query
+ */
+getReportModel = function(boardId, query){
+    var reportModel = []
+    var board = db.dashboardmodels.findOne({
+        '_id': ObjectId(boardId)
+    })
+    query.boardId = board._id
+    db.taskupdatefacts.find(query).forEach(
+        function(taskFact){
+            var task = taskFact.task
+            var creationDate = getTaskCreationDate(task._id)
+            var updateDate = taskFact.updateDate
+            var active = (convertToJSDate(updateDate).getTime() - convertToJSDate(creationDate).getTime())/(1000*60*60*24)
+            reportModel[reportModel.length] = {
+                taskFact: taskFact,
+                workflow: getProjectById(board, task.workflowId),
+                tier: getTierById(board, task.tierId),
+                taskCreated: creationDate,
+                daysActive: active
+            }
+        })
+    return {
+        taskHistoryEntries:reportModel
+    }
+}
+
+
+/*
  * Sets new order to the tier, and reorder other tiers appropriately
  * @param tierId tier identifier
  * @param order new tier order
@@ -163,14 +165,120 @@ updateTiersOrder = function(boardId, startingFromOrder, incrementor) {
 }
 
 /**
- * Adds new point to the chart model
+ * Gets workflow chart point group for the specified date
+ * @param projectIds project identifiers
+ * @param date the date chartpoint group will be fetched for
+ * @param tierOrders array of tier identifiers associated with order of the tier on the board
+ * @return chart point group
+ **/
+getWorkflowChartPointGroup = function(projectIds, date, tierOrders){
+    var yesterday = new Date(date)
+    yesterday.setDate(yesterday.getDate() - 1)
+    var chartPointGroup = db.chartpointgroups.findOne({
+        "workflowId" : {
+            $in : projectIds
+        },
+        date : {
+            $gt:toISO(yesterday),
+            $lt:toISO(date)
+        }
+    })
+    if(chartPointGroup){
+        chartPointGroup.tiers.sort(function(tierA, tierB){
+            if(tierOrders[tierA.tierId] < tierOrders[tierB.tierId]) return -1
+            if(tierOrders[tierA.tierId] > tierOrders[tierB.tierId]) return 1
+            return 0
+        })
+    }
+    return chartPointGroup
+}
+
+/**
+ * Gets array of tier identifiers associated with order of the tier on the board
+ * @param boardId board identifier
+ **/
+getTierOrders = function(boardId) {
+    var tierOrders = new Object()
+    db.dashboardmodels.findOne({
+        _id: ObjectId(boardId)
+    }).tiers.forEach(function(tier){
+        tierOrders[tier._id] = tier.order
+    })
+    return tierOrders
+}
+
+/**
+ * Builds model for the cumulative flow chart
+ * @param boardId board identifier the chart will be built for
+ * @param scale chart scale (0=day/1=week/2=month)
+ * @param projectId identifier of the project the chart will be built for
+ * (for all projects, of not specified)
+ * @return chart model
+ */
+getWorkflowChartModel = function(boardId, scale, projectId) {
+    var chartPointGroups = []
+    var projectIds = []
+    var pointGroup
+    if(projectId) projectIds[0] = ObjectId(projectId)
+    else{
+        db.dashboardmodels.findOne({
+            _id: ObjectId(boardId)
+        }, {
+            workflows: true
+        }).workflows.forEach(function(project){
+            projectIds[projectIds.length] = project._id
+        })
+    }
+
+    var lowerBound = convertToJSDate(db.chartpointgroups.find({
+        "workflowId" : {
+        $in : projectIds
+        }
+        }, {
+        date: 1
+        }).sort({
+        date: 1
+        }).limit(1)[
+        0].date)
+
+    var upperBound = new Date()
+    var middleBound = new Date(lowerBound)
+    var tierOrders = getTierOrders(boardId)
+
+    while(middleBound < upperBound){
+        pointGroup = getWorkflowChartPointGroup(projectIds, middleBound, tierOrders)
+        if(pointGroup)
+            chartPointGroups[chartPointGroups.length] = pointGroup
+        lowerBound = new Date(middleBound)
+        switch(scale){
+            case 0:
+                middleBound.setDate(middleBound.getDate() + 1)
+                break;
+            case 1:
+                middleBound.setDate(middleBound.getDate() + 7)
+                break;
+            case 2:
+                middleBound.setMonth(middleBound.getMonth() + 1)
+                break;
+        }
+    }
+    pointGroup = getWorkflowChartPointGroup(projectIds, upperBound, tierOrders)
+    if(pointGroup)
+        chartPointGroups[chartPointGroups.length] = pointGroup
+    return {
+        chartGroups: chartPointGroups
+    }
+}
+
+/**
+ * Adds new point to the history chart model
  * @param chartModel chart model
  * @param tierIds board model tiers
  * @param projectId project identifier
  * @param lowerBound lower date filtering bound
  * @param middleBound upper date filtering bound
  **/
-addChartPoint = function(chartModel, tierIds, projectId, lowerBound, middleBound){
+addHistoryChartPoint = function(chartModel, tierIds, projectId, lowerBound, middleBound){
     chartModel.points[chartModel.points.length] = {
         date : toISO(new Date(middleBound))
     }
@@ -182,7 +290,6 @@ addChartPoint = function(chartModel, tierIds, projectId, lowerBound, middleBound
             tierId: tierId,
             tierName: tier.name
         }
-        print('Counting for ' + toISO(lowerBound) + ' - ' + toISO(middleBound) + '. Tier ' + tier.name)
         var searchMask = {
             tierId: tierId,
             updateDate : {
@@ -198,14 +305,14 @@ addChartPoint = function(chartModel, tierIds, projectId, lowerBound, middleBound
 }
 
 /**
- * Builds model for the cumulative flow chart
+ * Builds model for the history chart
  * @param boardId board identifier the chart will be built for
  * @param scale chart scale (0=day/1=week/2=month)
  * @param projectId identifier of the project the chart will be built for
  * (for all projects, of not specified)
  * @return chart model
  */
-buildChartModel = function(boardId, scale, projectId) {
+buildHistoryChartModel = function(boardId, scale, projectId) {
     var chartModel = new Object()
     var searchMask = projectId?{
         'workflowId': ObjectId(projectId)

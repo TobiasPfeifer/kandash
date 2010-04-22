@@ -73,6 +73,14 @@ trait KandashService extends JObjectBuilder{
   def getDashboardByName(name:String):DashboardModel = DashboardModel.find("name", name).get
 
   /**
+   * Gets task by identifier
+   * @val taskId task ID
+   * @return task
+   */
+  /*def getTaskById(taskId: String):Task = DashboardModel.find(("tasks._id" -> taskId)).get.
+   tasks.find(_.id == taskId).get*/
+
+  /**
    * Gets list of dashboards from backend (only id's and names are filled)
    * @return list of boards
    */
@@ -99,13 +107,11 @@ trait KandashService extends JObjectBuilder{
    * @return task identifier
    */
   def addTask(boardId: String, task: Task): String = {    
-    val taskId = add[Task](boardId, task)
     TaskUpdateFact(ObjectId.get.toString,
-                   taskId,
-                   task.workflowId, 
-                   task.tierId,
+                   boardId,
+                   task,
                    new java.util.Date).save
-    taskId
+    add[Task](boardId, task)
   }
 
   /**
@@ -139,21 +145,20 @@ trait KandashService extends JObjectBuilder{
    * @return task identifier
    */
   def updateTask(task:Task): String = {
-    createFact(task._id, task.workflowId, task.tierId)
+    createFact(task)
     update[Task](task)
   }
 
   /**
    * Creates new fact based on changing the task's tier (state)
-   * @val taskId identifier of the task
-   * @val workflowId identifier of the project the task is assigned to
-   * @val tierId identifier if the new task's tier (state)
+   * @val task task
    * @return true, if task's tier was changed
    */
-  def createFact(taskId: String, workflowId: String, tierId: String):Boolean = {
-    val task = DashboardModel.find(("tasks._id" -> taskId)).get.tasks.find{task => task._id == taskId}.get
-    val tierIsChanged: Boolean = task.tierId != tierId
-    if(tierIsChanged) TaskUpdateFact(ObjectId.get.toString, taskId, task.workflowId, tierId, new java.util.Date).save
+  def createFact(task: Task):Boolean = {
+    val dashboard = DashboardModel.find(("tasks._id" -> task._id)).get
+    val oldTask = dashboard.tasks.find{oldTask => oldTask._id == task._id}.get
+    val tierIsChanged: Boolean = oldTask.tierId != task.tierId
+    if(tierIsChanged) TaskUpdateFact(ObjectId.get.toString, dashboard._id, task, new java.util.Date).save
     tierIsChanged
   }
 
