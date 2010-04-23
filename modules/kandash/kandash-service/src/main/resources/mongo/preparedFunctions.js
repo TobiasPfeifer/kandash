@@ -301,7 +301,8 @@ getWorkflowChartModel = function(boardId, scale, projectId) {
 getTodayChartPointGroup = function(workflowId){
     var query = {
         workflowId: workflowId,
-        date: toISO(new Date())
+        date: toISO(new Date()),
+        leadTime: calculateLeadTime(workflowId, toISO(new Date()))
     }
     var chartPointGroup = db.chartpointgroups.findOne(query)
     if(!chartPointGroup){
@@ -328,7 +329,6 @@ storeTierStatistics = function(chartPointGroupId, tier, taskCount){
     }, {
         _id: 1
     })
-    print('isPointExists ' + isPointExists)
     print('Storing statistics for ' + tier.name + ', count ' + taskCount + ', ' + chartPointGroupId)
     if(isPointExists)
         db.chartpointgroups.update({
@@ -365,4 +365,60 @@ trackBoardsState = function(){
             })
         })
     })
+}
+
+/**
+ * Gets "done" tier of the specifier board
+ * @param workflowId workflow identifier
+ * @return "done" tier
+ */
+getDoneTier = function(workflowId){
+    var doneTier
+    db.dashboardmodels.findOne({
+        'workflows._id': workflowId
+    }, {
+        tiers: true
+    }).tiers.forEach(function(tier){
+        if(tier.order == 0){
+            doneTier = tier
+            return
+        }
+    })
+    return doneTier
+}
+
+/**
+* Gets count of done and notdone tasks assigned to the project
+* at the specified date
+*/
+getTaskCount = function(workflowId, date){
+    var doneTierId = getDoneTier(workflowId)._id
+    var notdoneCount = 0
+    var doneCount
+    db.chartpointgroups.findOne({
+        date: new RegExp(date.substring(0, 10)),
+        workflowId: workflowId
+    }).tiers.forEach(function(tier){
+        if(tier.tierId.toString() == doneTierId.toString())
+            doneCount = tier.count
+        notdoneCount += tier.count
+    })
+    return {
+        notdoneCount: notdoneCount,
+        doneCount: doneCount
+    }
+}
+
+/**
+ * Calculates lead time for the given task count treshold
+ */
+calculateLeadTime = function(workflowId, date){
+    var count = getTaskCount(workflowId, date)
+    var doneCount = count.doneCount
+    var leadDate = convertToJSDate(date)
+    while(count.notdoneCount > doneCount){
+        leadDate.setDate(leadDate.getDate() - 1)
+        count = getTaskCount(workflowId, toISO(leadDate))
+    }
+    return (convertToJSDate(date).getTime() - leadDate.getTime())/(1000*60*60*24)
 }

@@ -102,7 +102,7 @@ com.vasilrem.kandash.board.Project = Ext.extend(Ext.Panel, {
         var projectBar = Ext.getCmp('projectbar').getTopToolbar()
         projectBar.add({
             text: project.title,
-            iconCls: '',
+            iconCls: 'taskbar-project-icon',
             handler: function(){
                 project.show()
                 project.ownerCt.resizeProjectColumns()

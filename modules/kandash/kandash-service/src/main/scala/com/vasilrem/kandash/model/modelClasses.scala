@@ -148,12 +148,13 @@ case class ChartModel(chartGroups: List[ChartPointGroup])
  * Represents group of chart points (association of the data and count of tasks
  * assigned during the specified period per tier)
  * @val workflowId identifier of the workflow
+ * @val leadTime average time required to complete the task
  * @val date date on the chart
  * @val tiers association of the data and count of tasks
  * completed during the specified period per tier
  */
 @BeanInfo
-case class ChartPointGroup(_id:String, workflowId: String, date: Date, tiers: List[ChartPoint]) extends MongoDocument[ChartPointGroup]{
+case class ChartPointGroup(_id:String, workflowId: String, leadTime: Double, date: Date, tiers: List[ChartPoint]) extends MongoDocument[ChartPointGroup]{
   def meta = ChartPointGroup
 }
 object ChartPointGroup extends MongoDocumentMeta[ChartPointGroup] {

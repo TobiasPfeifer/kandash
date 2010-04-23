@@ -47,6 +47,7 @@ object WorkflowChartModel {
                workflowId)
 
     MongoDB.defineDb(DefaultMongoIdentifier, MongoAddress(MongoHost("localhost", 27017), "kandash"))
+    ChartPointGroup.drop
     val cal = Calendar.getInstance
     cal.set(Calendar.YEAR, 2010)
     cal.set(Calendar.HOUR_OF_DAY, 0)
@@ -64,6 +65,7 @@ object WorkflowChartModel {
       val date = cal.getTime
       ChartPointGroup(ObjectId.get.toString,
                       projectId,
+                      random.nextDouble * 20,
                       date,
                       List(ChartPoint(ObjectId.get.toString, board.tiers.apply(0)._id, board.tiers.apply(0).name, random.nextInt(4)),
                            ChartPoint(ObjectId.get.toString, board.tiers.apply(1)._id, board.tiers.apply(1).name, random.nextInt(4)),

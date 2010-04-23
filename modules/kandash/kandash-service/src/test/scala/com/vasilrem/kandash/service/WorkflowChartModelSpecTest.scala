@@ -60,6 +60,7 @@ class WorkflowChartModelSpecTest extends SpecificationWithJUnit {
       val date = cal.getTime
       ChartPointGroup(ObjectId.get.toString,
                       projectId,
+                      random.nextDouble * 20,
                       date,
                       List(ChartPoint(ObjectId.get.toString, board.tiers.apply(0)._id, board.tiers.apply(0).name, random.nextInt(4)),
                            ChartPoint(ObjectId.get.toString, board.tiers.apply(1)._id, board.tiers.apply(1).name, random.nextInt(4)),

@@ -10,20 +10,32 @@ Ext.onReady(function(){
             layout:'fit',
             id: 'boardbar',
             tbar: [{
+                text: 'Choose Board',
+                iconCls: 'taskbar-board-icon',
+                handler: function(){
+                    window.location = './'
+                }
+            },{
+                text: 'Open Report',
+                iconCls: 'taskbar-report-icon',
+                handler: function(){
+                    window.location = 'chart.jsp?scale=week&board=' + boardFromRequest
+                }
+            },{
                 text: 'Add Task',
-                iconCls: '',
+                iconCls: 'taskbar-task-icon',
                 handler: function(){
                     showTaskDialog(true)
                 }
             },{
                 text: 'Add Project',
-                iconCls: '',
+                iconCls: 'taskbar-project-icon',
                 handler: function(){
                     createProjectDialog.show()
                 }
             },{
                 text: 'Add Tier',
-                iconCls: '',
+                iconCls: 'taskbar-tier-icon',
                 handler: function(){
                     showAddTierDialog()
                 }

@@ -33,6 +33,23 @@ Ext.onReady(function(){
         id:'viewport',
         layout:'border',        
         items:[{
+            region: 'north',
+            layout:'fit',
+            id: 'boardbar',
+            tbar: [{
+                text: 'Go To Board',
+                iconCls: 'taskbar-board-icon',
+                handler: function(){
+                    window.location = 'board.jsp?board=' + boardFromRequest
+                }
+            },{
+                text: 'Choose Another',
+                iconCls: 'taskbar-useboard-icon',
+                handler: function(){
+                    window.location = './'
+                }
+            }]
+        },{
             region: 'center',
             layout:'hbox',
             layoutConfig: {
@@ -59,11 +76,16 @@ Ext.onReady(function(){
                         var fields = chart.store.fields.keys
                         var seriesIndex = fields.indexOf(series.yField)
                         if(seriesIndex > 1){
-                            wip -= record.data[fields[seriesIndex - 1]]
+                            if(fields[seriesIndex - 1] != 'leadTime')
+                                wip -= record.data[fields[seriesIndex - 1]]
                         }
-                        return series.displayName + '\r\n'
-                        + record.data.date + '\r\n'
-                        + 'Work-in-progress: ' + wip;
+                        if(series.yField == 'leadTime')
+                            return  'Lead time: ' + wip + '\r\n'
+                            + record.data.date
+                        else
+                            return  series.displayName + '\r\n'
+                            + record.data.date + '\r\n'
+                            + 'Work-in-progress: ' + wip
                     },
                     extraStyle: {
                         padding: 10,
@@ -143,6 +165,7 @@ Ext.onReady(function(){
                     buttons: [{
                         text: 'Filter',
                         type: 'filter',
+                        iconCls: 'taskbar-filter-icon',
                         handler: function(){
                             showFilterDialog(board, function(query){
                                 if(query){
@@ -282,18 +305,20 @@ Ext.onReady(function(){
             url: url,
             success: function(response) {
                 var chartModel = Ext.decode(response.responseText)
-                var fields = ['date']
+                var fields = ['date', 'leadTime']
                 var data = []
                 var series = []
                 chartModel.chartGroups.forEach(function(pointGroup){
                     var dataRecord = new Object()
                     data[data.length] = dataRecord
                     dataRecord['date'] = pointGroup.date.substring(0, 10)
+                    dataRecord['leadTime'] = pointGroup.leadTime
                     var pointsSum = 0
                     pointGroup.tiers.forEach(function(point, i){
                         pointsSum += point.count
                         if(!series[i]){
-                            fields[i + 1] = 'id' + point.tierId
+                            fields[i + 2] = 'id' + point.tierId
+                            var color = '0x' + i + i + i + i + i + i
                             series[i] = {
                                 displayName: point.tierName,
                                 yField: 'id' + point.tierId
@@ -302,6 +327,17 @@ Ext.onReady(function(){
                         dataRecord['id' + point.tierId] = pointsSum
                     })
                 })
+                series[series.length] = {
+                    displayName: 'Lead Time',
+                    yField: 'leadTime',
+                    style:
+                    {
+                        lineColor:0xB5BAC8,
+                        lineAlpha:.5,
+                        borderColor:0xB5BAC8,
+                        fillColor:0xffffff 
+                    }
+                }
                 var chartCmp = Ext.getCmp('flowChart')
                 chartCmp.store = new Ext.data.JsonStore({
                     fields: fields,
