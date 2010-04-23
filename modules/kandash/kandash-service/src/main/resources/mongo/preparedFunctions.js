@@ -42,6 +42,11 @@ toISO= function(date){
     return A.splice(0, 3).join('-')+'T'+A.join(':') + '.000Z';
 }
 
+/**
+ * Finds project (workflow) by ID one the board
+ * @param board
+ * @param projectId
+ **/
 getProjectById = function(board, projectId){
     var project
     board.workflows.forEach(function(workflow){
@@ -52,6 +57,11 @@ getProjectById = function(board, projectId){
     return project
 }
 
+/**
+ * Finds tier (state) by ID one the board
+ * @param board
+ * @param tierId
+ **/
 getTierById = function(board, tierId){
     var tier
     board.tiers.forEach(function(t){        
@@ -63,6 +73,10 @@ getTierById = function(board, tierId){
     return tier
 }
 
+/**
+ * Gets the date, when task was craeted
+ * @param taskId
+ */
 getTaskCreationDate = function(taskId){
     return db.taskupdatefacts.find({
         'task._id' : taskId
@@ -73,6 +87,10 @@ getTaskCreationDate = function(taskId){
         }).limit(1)[0].updateDate
 }
 
+/**
+ * Gets the date of the last task update
+ * @param taskId
+ */
 getTaskLastUpdateDate = function(taskId){
     return db.taskupdatefacts.find({
         'task._id' : taskId
@@ -276,87 +294,75 @@ getWorkflowChartModel = function(boardId, scale, projectId) {
 }
 
 /**
- * Adds new point to the history chart model
- * @param chartModel chart model
- * @param tierIds board model tiers
- * @param projectId project identifier
- * @param lowerBound lower date filtering bound
- * @param middleBound upper date filtering bound
- **/
-addHistoryChartPoint = function(chartModel, tierIds, projectId, lowerBound, middleBound){
-    chartModel.points[chartModel.points.length] = {
-        date : toISO(new Date(middleBound))
+ * Gets chart point group for the current date
+ * @param workflowId project identifier
+ * @return chartPointGroup
+ */
+getTodayChartPointGroup = function(workflowId){
+    var query = {
+        workflowId: workflowId,
+        date: toISO(new Date())
     }
-    chartModel.points[chartModel.points.length - 1].tiers = new Array()
-    var tiers = chartModel.points[chartModel.points.length - 1].tiers
-    tierIds.forEach(function(tier){
-        var tierId = tier._id
-        tiers[tiers.length] = {
-            tierId: tierId,
-            tierName: tier.name
-        }
-        var searchMask = {
-            tierId: tierId,
-            updateDate : {
-                $gt:toISO(lowerBound),
-                $lt:toISO(middleBound)
-            }
-        }
-        if(projectId){
-            searchMask.workflowId = ObjectId(projectId)
-        }
-        tiers[tiers.length - 1].count = db.taskupdatefacts.find(searchMask).length()
-    })
+    var chartPointGroup = db.chartpointgroups.findOne(query)
+    if(!chartPointGroup){
+        query.tiers = []
+        db.chartpointgroups.insert(query)
+        chartPointGroup = db.chartpointgroups.findOne(query)
+    }
+    return chartPointGroup
 }
 
 /**
- * Builds model for the history chart
- * @param boardId board identifier the chart will be built for
- * @param scale chart scale (0=day/1=week/2=month)
- * @param projectId identifier of the project the chart will be built for
- * (for all projects, of not specified)
- * @return chart model
+ * Stores tier statisitcs
  */
-buildHistoryChartModel = function(boardId, scale, projectId) {
-    var chartModel = new Object()
-    var searchMask = projectId?{
-        'workflowId': ObjectId(projectId)
-    }:{}
-
-    var board = db.dashboardmodels.findOne({
-        _id: ObjectId(boardId)
-    }, {
-        tiers: true
-    })
-
-    var tierIds = board.tiers
-
-    chartModel.lowerBound = convertToJSDate(db.taskupdatefacts.find(searchMask, {
-        updateDate: 1
-        }).sort({
-        updateDate: 1
-        }).limit(1)[0].updateDate)
-    chartModel.upperBound = new Date()
-    chartModel.points = new Array()
-    var lowerBound = new Date(chartModel.lowerBound)
-    var middleBound = new Date(chartModel.lowerBound)
-    while(middleBound < chartModel.upperBound){
-        addChartPoint(chartModel, tierIds, projectId, lowerBound, middleBound)
-        lowerBound = new Date(middleBound)
-        switch(scale){
-            case 0:
-                middleBound.setDate(middleBound.getDate() + 1)
-                break;
-            case 1:
-                middleBound.setDate(middleBound.getDate() + 7)
-                break;
-            case 2:
-                middleBound.setMonth(middleBound.getMonth() + 1)
-                break;
-        }
+storeTierStatistics = function(chartPointGroupId, tier, taskCount){
+    var chartPoint = {
+        _id: ObjectId(),
+        tierId: tier._id,
+        tierName: tier.name,
+        count: taskCount
     }
-    addChartPoint(chartModel, tierIds, projectId, lowerBound, chartModel.upperBound)
-    chartModel.lowerBound = toISO(chartModel.lowerBound)
-    chartModel.upperBound = toISO(chartModel.upperBound)
-    return chartModel
+    var isPointExists = db.chartpointgroups.findOne({
+        _id: chartPointGroupId,
+        'tiers.tierId': tier._id
+    }, {
+        _id: 1
+    })
+    print('isPointExists ' + isPointExists)
+    print('Storing statistics for ' + tier.name + ', count ' + taskCount + ', ' + chartPointGroupId)
+    if(isPointExists)
+        db.chartpointgroups.update({
+            _id: chartPointGroupId,
+            'tiers.tierId': tier._id
+        },{
+            $set:{
+                'tiers.$':chartPoint
+            }
+        })
+    else
+        db.chartpointgroups.update({
+            _id: chartPointGroupId
+        }, {
+            $push:{
+                tiers: chartPoint
+            }
+        })
+}
+
+/**
+ * Tracks state of all the boards/projects for chart modeling
+ */
+trackBoardsState = function(){
+    db.dashboardmodels.find().forEach(function(board){
+        board.workflows.forEach(function(workflow){
+            var chartPointGroup = getTodayChartPointGroup(workflow._id)
+            board.tiers.forEach(function(tier){
+                storeTierStatistics(chartPointGroup._id, tier,
+                    board.tasks.filter(function(task) {
+                        return task.tierId.toString() == tier._id.toString()
+                    }).length
+                    )
+            })
+        })
+    })
 }

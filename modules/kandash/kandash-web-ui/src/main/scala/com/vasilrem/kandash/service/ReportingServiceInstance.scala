@@ -6,6 +6,7 @@
 package com.vasilrem.kandash.service
 
 import com.vasilrem.kandash.mongo._
+import com.vasilrem.kandash.runtime._
 
 /**
  * Instance of Kandash service
@@ -21,4 +22,9 @@ object ReportingServiceInstance extends ReportingService{
   }
 
   preparedFunction.loadPreparedFunctions(List("/mongo/preparedFunctions.js"))
+
+  val persister = new BoardStatePersister{
+    val timeout = 20*1000
+    val prepared = preparedFunction
+  }
 }

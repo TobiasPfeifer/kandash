@@ -8,6 +8,7 @@ package com.vasilrem.kandash.model
 import com.eltimn.scamongo._
 import java.util.Date
 import scala.reflect.BeanInfo
+import com.mongodb._
 
 /**
  * Tier represents standardized state of task per workflow (started, in
@@ -165,6 +166,9 @@ object ChartPointGroup extends MongoDocumentMeta[ChartPointGroup] {
  */
 @BeanInfo
 case class ChartPoint(_id: String, tierId: String, tierName: String, count: Double) extends MongoDocument[ChartPoint]{
+
+  def this(tierId: String, tierName: String, count: Double) = this(ObjectId.get.toString, tierId, tierName, count)
+
   def meta = ChartPoint
 }
 object ChartPoint extends MongoDocumentMeta[ChartPoint] {
