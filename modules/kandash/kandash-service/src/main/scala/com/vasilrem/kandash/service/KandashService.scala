@@ -248,20 +248,7 @@ trait KandashService extends JObjectBuilder{
    * @param collectionType collection type of the container
    */
   def removeTasksFromContainer(containerId: String, collectionType: String) = {
-    val containerRefId = collectionType.substring(0, collectionType.length - 1) + "Id"
-    MongoDB.use(DefaultMongoIdentifier) ( db => {
-        db.eval(""" function() {
-                  db.dashboardmodels.find({'""" + collectionType + """._id' : ObjectId('""" + containerId + """')}).forEach(
-                    function(o){
-                      for(var i=(o.tasks.length - 1);i>=0;i--){
-                        if(o.tasks[i].""" + containerRefId + """.toString() == '""" + containerId + """'){
-                          o.tasks.splice(i, 1);
-                        }
-                      }
-                      db.dashboardmodels.save(o);
-                    })
-                }""")
-      })
+    preparedFunction.call("removeTasksFromContainer('" + containerId + "', '" + collectionType + "')")
   }
 
   /**

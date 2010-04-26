@@ -24,6 +24,28 @@ class KandashServiceSpecTest extends SpecificationWithJUnit {
     val preparedFunction = prepared
   }
 
+  /**
+   * Creates new dummy task
+   */
+  def DummyTask(taskId: String, tierId: String, workflowId: String)
+  = NamedDummyTask(taskId, "Dummy Task", tierId, workflowId)
+
+  /**
+   * Creates new dummy task
+   */
+  def NamedDummyTask(taskId: String, taskName: String, tierId: String, workflowId: String)
+  = new Task(taskId,
+             new Some("unknown"),
+             taskName,
+             new Some(5),
+             new Some("unknown"),
+             50,
+             50,
+             new Some(100),
+             1,
+             tierId,
+             workflowId)
+
   doBeforeSpec{
     prepared.loadPreparedFunctions(List("/mongo/preparedFunctions.js"))
   }
@@ -82,18 +104,8 @@ class KandashServiceSpecTest extends SpecificationWithJUnit {
     val dashboard = kandashService.getDashboardById(boardId)
     println("Adding tasks to " + dashboard)
     println("Added new task " +
-            kandashService.add[Task](boardId,
-                                     new Task(null,
-                                              new Some("unknown"),
-                                              "Test Task",
-                                              new Some(5),
-                                              new Some("unknown"),
-                                              50,
-                                              50,
-                                              new Some(100),
-                                              1,
-                                              dashboard.tiers.last._id,
-                                              dashboard.workflows.last._id)))
+            kandashService.add[Task](boardId, DummyTask(null, dashboard.tiers.last._id,
+                                                        dashboard.workflows.last._id)))
     val resultingDashboard = kandashService.getDashboardById(boardId)
     println("Resulting dashboard: " + resultingDashboard)
     resultingDashboard.tasks.length must beEqualTo(1)
@@ -139,29 +151,10 @@ class KandashServiceSpecTest extends SpecificationWithJUnit {
     println("\r\n\r\n=====Update task on the board======")
     val boardId = kandashService.createNewDashboard("testDashboard")
     val dashboard = kandashService.getDashboardById(boardId)
-    val taskId = kandashService.add[Task](boardId,
-                                          new Task(null,
-                                                   new Some("unknown"),
-                                                   "Test Task",
-                                                   new Some(5),
-                                                   new Some("unknown"),
-                                                   50,
-                                                   50,
-                                                   new Some(100),
-                                                   1,
-                                                   dashboard.tiers.last._id,
-                                                   dashboard.workflows.last._id))
-    val updatedTask =  new Task(taskId,
-                                new Some("unknown"),
-                                "Updated task!!!",
-                                new Some(5),
-                                new Some("unknown"),
-                                50,
-                                50,
-                                new Some(100),
-                                1,
-                                dashboard.tiers.last._id,
-                                dashboard.workflows.last._id)
+    val taskId = kandashService.add[Task](boardId, DummyTask(null, dashboard.tiers.last._id,
+                                                             dashboard.workflows.last._id))
+    val updatedTask =  NamedDummyTask(taskId, "Updated!!!", dashboard.tiers.last._id,
+                                      dashboard.workflows.last._id)
     println("Updating " + updatedTask + " at " + dashboard)
     kandashService.update[Task](updatedTask)
     val resultingBoard = kandashService.getDashboardById(boardId)
@@ -201,17 +194,8 @@ class KandashServiceSpecTest extends SpecificationWithJUnit {
     val boardId = kandashService.createNewDashboard("testDashboard")
     val dashboard = kandashService.getDashboardById(boardId)
     val taskId = kandashService.add[Task](boardId,
-                                          new Task(null,
-                                                   new Some("unknown"),
-                                                   "Test Task",
-                                                   new Some(5),
-                                                   new Some("unknown"),
-                                                   50,
-                                                   50,
-                                                   new Some(100),
-                                                   1,
-                                                   dashboard.tiers.last._id,
-                                                   dashboard.workflows.last._id))
+                                          DummyTask(null, dashboard.tiers.last._id,
+                                                    dashboard.workflows.last._id))
     println("Removing task " + taskId + " from " + boardId)
     kandashService.remove(taskId, Task.collectionName)    
     val resultingBoard = kandashService.getDashboardById(boardId)    
@@ -240,7 +224,7 @@ class KandashServiceSpecTest extends SpecificationWithJUnit {
       updatedDashboard.tiers.filter(_.order > 0).foreach({
           tier=>
           val index = updatedDashboard.tiers.indexOf(tier)
-          tier.order must beEqualTo(originalDashboard.tiers.apply(index).order + 1)
+          tier.order must beEqualTo(originalDashboard.tiers(index).order + 1)
         })
     }
     "affect persisted board model (decrease order count of some tiers)" in {
@@ -251,7 +235,7 @@ class KandashServiceSpecTest extends SpecificationWithJUnit {
       updatedDashboard.tiers.filter(_.order > 0).foreach({
           tier=>
           val index = updatedDashboard.tiers.indexOf(tier)
-          tier.order must beEqualTo(originalDashboard.tiers.apply(index).order - 1)
+          tier.order must beEqualTo(originalDashboard.tiers(index).order - 1)
         })
     }
   }
@@ -263,30 +247,12 @@ class KandashServiceSpecTest extends SpecificationWithJUnit {
     println("Adding tasks to " + dashboard)
     println("Added new task " +
             kandashService.add[Task](boardId,
-                                     new Task(null,
-                                              new Some("unknown"),
-                                              "Test Task",
-                                              new Some(5),
-                                              new Some("unknown"),
-                                              50,
-                                              50,
-                                              new Some(100),
-                                              1,
-                                              dashboard.tiers.last._id,
-                                              dashboard.workflows.last._id)))
+                                     DummyTask(null, dashboard.tiers.last._id,
+                                               dashboard.workflows.last._id)))
     println("Added new task " +
             kandashService.add[Task](boardId,
-                                     new Task(null,
-                                              new Some("unknown"),
-                                              "Test Task",
-                                              new Some(5),
-                                              new Some("unknown"),
-                                              50,
-                                              50,
-                                              new Some(100),
-                                              1,
-                                              dashboard.tiers.apply(1)._id,
-                                              dashboard.workflows.last._id)))
+                                     DummyTask(null, dashboard.tiers(1)._id,
+                                               dashboard.workflows.last._id)))
     println("Removing tasks from " + dashboard.tiers.last._id + "(" + Tier.collectionName + ")")
     kandashService.removeTasksFromContainer(dashboard.tiers.last._id, Tier.collectionName)
     kandashService.getDashboardById(boardId).tasks.length must beEqualTo(1)
@@ -299,30 +265,12 @@ class KandashServiceSpecTest extends SpecificationWithJUnit {
     println("Adding tasks to " + dashboard)
     println("Added new task " +
             kandashService.add[Task](boardId,
-                                     new Task(null,
-                                              new Some("unknown"),
-                                              "Test Task",
-                                              new Some(5),
-                                              new Some("unknown"),
-                                              50,
-                                              50,
-                                              new Some(100),
-                                              1,
-                                              dashboard.tiers.last._id,
-                                              dashboard.workflows.last._id)))
+                                     DummyTask(null, dashboard.tiers.last._id,
+                                               dashboard.workflows.last._id)))
     println("Added new task " +
             kandashService.add[Task](boardId,
-                                     new Task(null,
-                                              new Some("unknown"),
-                                              "Test Task",
-                                              new Some(5),
-                                              new Some("unknown"),
-                                              50,
-                                              50,
-                                              new Some(100),
-                                              1,
-                                              dashboard.tiers.apply(1)._id,
-                                              dashboard.workflows.last._id)))
+                                     DummyTask(null, dashboard.tiers(1)._id,
+                                               dashboard.workflows.last._id)))
     println("Removing tasks from " + dashboard.workflows.last._id + "(" + Workflow.collectionName + ")")
     kandashService.removeTasksFromContainer(dashboard.workflows.last._id, Workflow.collectionName)
     kandashService.getDashboardById(boardId).tasks.length must beEqualTo(0)
@@ -348,40 +296,13 @@ class KandashServiceSpecTest extends SpecificationWithJUnit {
       println("\r\n\r\n=====Changed fact's tier======")
       val boardId = kandashService.createNewDashboard("testDashboard")
       val dashboard = kandashService.getDashboardById(boardId)
-      val taskId = kandashService.add[Task](boardId, new Task(null,
-                                                              new Some("unknown"),
-                                                              "Test Task",
-                                                              new Some(5),
-                                                              new Some("unknown"),
-                                                              50,
-                                                              50,
-                                                              new Some(100),
-                                                              1,
-                                                              dashboard.tiers.last._id,
-                                                              dashboard.workflows.last._id))
+      val taskId = kandashService.add[Task](boardId, DummyTask(null, dashboard.tiers.last._id,
+                                                               dashboard.workflows.last._id))
       println("Setting tier " + dashboard.tiers.first._id)
-      kandashService.createFact(new Task(taskId,
-                                         new Some("unknown"),
-                                         "Test Task",
-                                         new Some(5),
-                                         new Some("unknown"),
-                                         50,
-                                         50,
-                                         new Some(100),
-                                         1,
-                                         dashboard.tiers.last._id,
-                                         dashboard.workflows.last._id)) must beFalse
-      kandashService.createFact(new Task(taskId,
-                                         new Some("unknown"),
-                                         "Test Task",
-                                         new Some(5),
-                                         new Some("unknown"),
-                                         50,
-                                         50,
-                                         new Some(100),
-                                         1,
-                                         dashboard.tiers.first._id,
-                                         dashboard.workflows.last._id)) must beTrue
+      kandashService.createFact(DummyTask(taskId, dashboard.tiers.last._id,
+                                          dashboard.workflows.last._id)) must beFalse
+      kandashService.createFact(DummyTask(taskId, dashboard.tiers.first._id,
+                                          dashboard.workflows.last._id)) must beTrue
     }
   }
 

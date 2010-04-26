@@ -67,17 +67,17 @@ class HistoryChartModelSpecTest extends SpecificationWithJUnit {
      cal.set(Calendar.DAY_OF_YEAR, i)
      val date = cal.getTime
      var taskId = ObjectId.get.toString
-     kandashService.addTask(boardId, NewTask(taskId, projectId, board.tiers.apply(0)._id))
-     TaskUpdateFact(taskId, ObjectId.get.toString, projectId, board.tiers.apply(0)._id, date).save
+     kandashService.addTask(boardId, NewTask(taskId, projectId, board.tiers(0)._id))
+     TaskUpdateFact(taskId, ObjectId.get.toString, projectId, board.tiers(0)._id, date).save
      if(i%3 == 0){
      taskId = ObjectId.get.toString
-     kandashService.addTask(boardId, NewTask(taskId, projectId, board.tiers.apply(2)._id))
-     TaskUpdateFact(taskId, ObjectId.get.toString, projectId, board.tiers.apply(2)._id, date).save
+     kandashService.addTask(boardId, NewTask(taskId, projectId, board.tiers(2)._id))
+     TaskUpdateFact(taskId, ObjectId.get.toString, projectId, board.tiers(2)._id, date).save
      }
      if(i%2 == 0){
      taskId = ObjectId.get.toString
-     kandashService.addTask(boardId, NewTask(taskId, projectId, board.tiers.apply(1)._id))
-     TaskUpdateFact(taskId, ObjectId.get.toString, projectId, board.tiers.apply(1)._id, date).save
+     kandashService.addTask(boardId, NewTask(taskId, projectId, board.tiers(1)._id))
+     TaskUpdateFact(taskId, ObjectId.get.toString, projectId, board.tiers(1)._id, date).save
      }
      }
      println("Dummy board is created")

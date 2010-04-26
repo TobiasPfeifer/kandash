@@ -50,9 +50,9 @@ class ChartModelResourceSpecTest extends SpecificationWithJUnit {
                       projectId,
                       random.nextDouble * 20,
                       date,
-                      List(ChartPoint(ObjectId.get.toString, board.tiers.apply(0)._id, board.tiers.apply(0).name, random.nextInt(4)),
-                           ChartPoint(ObjectId.get.toString, board.tiers.apply(1)._id, board.tiers.apply(1).name, random.nextInt(4)),
-                           ChartPoint(ObjectId.get.toString, board.tiers.apply(2)._id, board.tiers.apply(2).name, backlogCount))).save
+                      List(ChartPoint(ObjectId.get.toString, board.tiers(0)._id, board.tiers(0).name, random.nextInt(4)),
+                           ChartPoint(ObjectId.get.toString, board.tiers(1)._id, board.tiers(1).name, random.nextInt(4)),
+                           ChartPoint(ObjectId.get.toString, board.tiers(2)._id, board.tiers(2).name, backlogCount))).save
       backlogCount += random.nextInt(2)
     }
     println("Dummy board is created")

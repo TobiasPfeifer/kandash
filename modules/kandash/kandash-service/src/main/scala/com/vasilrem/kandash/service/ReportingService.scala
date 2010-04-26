@@ -27,7 +27,13 @@ trait ReportingService extends JObjectBuilder{
 
   /** instantiates new connection to mongo */
   MongoDB.defineDb(DefaultMongoIdentifier, MongoAddress(MongoHost(host, port), database))
-   
+
+  /**
+   * Gets model for the report grid
+   * @val boardId board identifier
+   * @val filter JSON/mongo query
+   * @return grid model
+   */
   def getReportModel(boardId: String, filter: String): ReportModel = {
     Serialization.read[ReportModel](preparedFunction.call(
         "getReportModel('" + boardId + "', " + filter.replaceAll("\"", "'") + ")").toString)

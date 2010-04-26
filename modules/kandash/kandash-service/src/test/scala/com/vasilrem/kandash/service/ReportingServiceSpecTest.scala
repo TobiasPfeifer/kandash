@@ -70,17 +70,17 @@ class ReportingServiceSpecTest extends SpecificationWithJUnit {
       cal.set(Calendar.DAY_OF_YEAR, i)
       val date = cal.getTime
       if(i%2 == 0){
-        val task = NewTask(ObjectId.get.toString, projectId, board.tiers.apply(0)._id)
+        val task = NewTask(ObjectId.get.toString, projectId, board.tiers(0)._id)
         kandashService.addTask(boardId, task)
         TaskUpdateFact(ObjectId.get.toString, boardId, task, date).save
       }
       if(i%4 == 0){
-        val task = NewTask(ObjectId.get.toString, projectId, board.tiers.apply(2)._id)
+        val task = NewTask(ObjectId.get.toString, projectId, board.tiers(2)._id)
         kandashService.addTask(boardId, task)
         TaskUpdateFact(ObjectId.get.toString, boardId, task, date).save
       }
       if(i%3 == 0){
-        val task = NewTask(ObjectId.get.toString, projectId, board.tiers.apply(1)._id)
+        val task = NewTask(ObjectId.get.toString, projectId, board.tiers(1)._id)
         kandashService.addTask(boardId, task)
         TaskUpdateFact(ObjectId.get.toString, boardId, task, date).save
       }

@@ -1,5 +1,5 @@
 /**
- * Test function to make sure, procedures bundle is loaded
+ * Test function to make sure stored code is loaded
  * @param string any string
  * @return 'test $passed string$'
  */
@@ -44,8 +44,8 @@ toISO= function(date){
 
 /**
  * Finds project (workflow) by ID one the board
- * @param board
- * @param projectId
+ * @param board dashboard model JSON object
+ * @param projectId project identifier
  **/
 getProjectById = function(board, projectId){
     var project
@@ -59,8 +59,8 @@ getProjectById = function(board, projectId){
 
 /**
  * Finds tier (state) by ID one the board
- * @param board
- * @param tierId
+ * @param board dashboard model JSON object
+ * @param tierId tier identifier
  **/
 getTierById = function(board, tierId){
     var tier
@@ -74,8 +74,8 @@ getTierById = function(board, tierId){
 }
 
 /**
- * Gets the date, when task was craeted
- * @param taskId
+ * Gets the date, when the task was created (from task update facts)
+ * @param taskId task identifier
  */
 getTaskCreationDate = function(taskId){
     return db.taskupdatefacts.find({
@@ -88,8 +88,8 @@ getTaskCreationDate = function(taskId){
 }
 
 /**
- * Gets the date of the last task update
- * @param taskId
+ * Gets the date of the last task update (from task update facts)
+ * @param taskId task identifier
  */
 getTaskLastUpdateDate = function(taskId){
     return db.taskupdatefacts.find({
@@ -102,8 +102,8 @@ getTaskLastUpdateDate = function(taskId){
 }
 
 /**
- * Builds basic report model
- * @param boardId
+ * Builds basic report model based on the passed Mongo/JSON query
+ * @param boardId board identifier
  * @param query search query
  */
 getReportModel = function(boardId, query){
@@ -138,7 +138,7 @@ getReportModel = function(boardId, query){
 
 
 /*
- * Sets new order to the tier, and reorder other tiers appropriately
+ * Sets the new order number of the tier, and reorders other tiers appropriately
  * @param tierId tier identifier
  * @param order new tier order
  */
@@ -217,7 +217,7 @@ getWorkflowChartPointGroup = function(projectIds, date, tierOrders){
 }
 
 /**
- * Gets array of tier identifiers associated with order of the tier on the board
+ * Gets array of tier identifiers associated with tier order
  * @param boardId board identifier
  **/
 getTierOrders = function(boardId) {
@@ -314,7 +314,10 @@ getTodayChartPointGroup = function(workflowId){
 }
 
 /**
- * Stores tier statisitcs
+ * Stores tier statistics
+ * @param chartPointGroupId identifier of the chart point to update
+ * @param tier tier JSON object
+ * @param taskCount of tasks assigned to the tier
  */
 storeTierStatistics = function(chartPointGroupId, tier, taskCount){
     var chartPoint = {
@@ -350,7 +353,8 @@ storeTierStatistics = function(chartPointGroupId, tier, taskCount){
 }
 
 /**
- * Tracks state of all the boards/projects for chart modeling
+ * Tracks state of all the boards/projects for chart modeling. Regularly called
+ * from the backend in order to track usage and gather statistics
  */
 trackBoardsState = function(){
     db.dashboardmodels.find().forEach(function(board){
@@ -388,9 +392,13 @@ getDoneTier = function(workflowId){
 }
 
 /**
-* Gets count of done and notdone tasks assigned to the project
-* at the specified date
-*/
+ * Gets count of done and not finished tasks assigned to the project
+ * at the specified date
+ * @param workflowId identifier of the project
+ * @param date count of tasks is calcualted for the specified date
+ * @return count of done and not finished tasks assigned to the project
+ * at the specified date. Format: {notdoneCount: <number>, doneCount: <number>}
+ */
 getTaskCount = function(workflowId, date){
     var doneTierId = getDoneTier(workflowId)._id
     var notdoneCount = 0
@@ -410,7 +418,9 @@ getTaskCount = function(workflowId, date){
 }
 
 /**
- * Calculates lead time for the given task count treshold
+ * Calculates lead time for the given date
+ * @param workflowId irdentifier of the project
+ * @param date lead time will be calculated for the specified date
  */
 calculateLeadTime = function(workflowId, date){
     var count = getTaskCount(workflowId, date)
@@ -421,4 +431,24 @@ calculateLeadTime = function(workflowId, date){
         count = getTaskCount(workflowId, toISO(leadDate))
     }
     return (convertToJSDate(date).getTime() - leadDate.getTime())/(1000*60*60*24)
+}
+
+/**
+ * Removes all tasks assigned to the specified container type
+ * @param collectionType task/tier/board or any other container type
+ * @param containerId container identifier
+ */
+removeTasksFromContainer = function(containerId, collectionType) {
+    var containerRefId = collectionType.substring(0, collectionType.length - 1) + "Id"
+    var query = new Object()
+    query[collectionType + '._id'] = ObjectId(containerId)
+    db.dashboardmodels.find(query).forEach(
+        function(board){
+            for(var i=(board.tasks.length - 1);i>=0;i--){
+                if(board.tasks[i][containerRefId].toString() == containerId){
+                    board.tasks.splice(i, 1);
+                }
+            }
+            db.dashboardmodels.save(board);
+        })
 }
