@@ -356,14 +356,33 @@ storeTierStatistics = function(chartPointGroupId, tier, taskCount){
  */
 trackBoardsState = function(){
     db.dashboardmodels.find().forEach(function(board){
-        board.workflows.forEach(function(workflow){
+        board.workflows.forEach(function(workflow){            
             var chartPointGroup = getTodayChartPointGroup(workflow._id)
+            var doneTier = getDoneTier(workflow._id)
             board.tiers.forEach(function(tier){
-                storeTierStatistics(chartPointGroup._id, tier,
-                    board.tasks.filter(function(task) {
+                var count
+                if(tier._id.toString() == doneTier._id.toString()){                    
+                    count = db.taskupdatefacts.group({
+                        key: {
+                            'task._id':true
+                        }, 
+                        cond:{
+                            "task.tierId" :  tier._id
+                        }, 
+                        reduce: function(obj,prev){
+                            prev.count++
+                        }, 
+                        initial: {
+                            count: 0
+                        }
+                    }).length
+                    print('search in facts for ' + doneTier._id + ', count ' + count)
+                }else{
+                    count = board.tasks.filter(function(task) {
                         return task.tierId.toString() == tier._id.toString()
                     }).length
-                    )
+                }
+                storeTierStatistics(chartPointGroup._id, tier, count)
             })
         })
     })
