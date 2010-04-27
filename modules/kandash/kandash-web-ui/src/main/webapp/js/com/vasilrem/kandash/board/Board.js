@@ -162,10 +162,11 @@ com.vasilrem.kandash.board.Board = Ext.extend(Ext.Panel, {
  * @param offsetLeft offset of the task from the left of board
  * cell(project/tier)
  * @param offsetTop offset of the task from the top of board cell(project/tier)
+ * @param doRefresh force tier cell refresh (true/false)
  * @return task identifier
  */
     addTask: function(taskId, projectId, tierId, taskName, assignedTo, estimation,
-        priority, offsetLeft, offsetTop){
+        priority, offsetLeft, offsetTop, doRefresh){
         if(!taskId){
             taskId = POST(RESOURCES + RS_TASK + '/' + getBoard().id, {
                 'assigneeId': assignedTo, // TO CHANGE: assignee name should be replaced with assignee ID
@@ -207,6 +208,7 @@ com.vasilrem.kandash.board.Board = Ext.extend(Ext.Panel, {
             }
         }
         boardCell.add(task)
+        if(doRefresh) boardCell.doLayout()
         return taskId
     },
 

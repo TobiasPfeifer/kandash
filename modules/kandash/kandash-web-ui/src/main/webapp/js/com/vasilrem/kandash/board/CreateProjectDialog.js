@@ -10,9 +10,11 @@ var createProjectDialogForm = new Ext.form.FormPanel({
     id: 'createProjectDialogForm',
     baseCls: 'x-plain',
     labelWidth: 100,
+    monitorValid:true,
     defaultType: 'textfield',
     items: [{
         fieldLabel: 'Project Name',
+        allowBlank: false,
         name: 'projectname',
         anchor:'100%'
     }]
@@ -39,6 +41,9 @@ var createProjectDialog = new Ext.Window({
         type: 'submit',
         handler: function(){
             var form = Ext.getCmp('createProjectDialogForm').getForm()
+            if(!form.isValid()){
+                return
+            }
             var projectName = form.items.items[0].getValue()
             getBoard().addProject(null, projectName)
             createProjectDialog.hide()

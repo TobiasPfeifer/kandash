@@ -8,21 +8,33 @@ Ext.onReady(function(){
         items:[{
             region: 'north',
             baseCls: 'x-plain',
-            height: 150,
+            height: 100,
             minSize: 75,
             maxSize: 250,
-            cmargins: '5 0 0 0'
+            layout: 'vbox',
+            margins: '20 20 20 20',
+            items:[{
+                baseCls: 'x-plain',
+                margins: '0 0 0 30',
+                cls: 'title',
+                html:'kandash'
+            },{
+                baseCls: 'x-plain',
+                margins: '0 0 0 30',
+                cls: 'title-small',
+                html:'choose the right tool'
+            }]
         },{
             baseCls: 'x-plain',
             region: 'center'
         },{
             region: 'south',
             baseCls: 'x-plain',
-            height: 200,
+            height: 100,
             minSize: 75,
             maxSize: 250,
             layout: 'anchor',
-            margins: '40 40 40 40',
+            margins: '80 20 80 40',
             items: [{
                 baseCls: 'x-plain',
                 bodyStyle: 'font:normal 20px tahoma, arial, helvetica, sans-serif',
@@ -30,7 +42,7 @@ Ext.onReady(function(){
             },new Ext.form.FormPanel({
                 baseCls: 'x-plain',
                 layout:'hbox',
-                margins: '20 20 20 20',
+                margins: '0 0 0 20',
                 defaultType: 'label',
                 items:[
                 {
@@ -38,19 +50,46 @@ Ext.onReady(function(){
                     width: 100,
                     height: 33,
                     margins: '10 10 10 10',
-                    iconCls:'product-mongo-icon'
+                    iconCls:'product-mongo-icon',
+                    listeners : {
+                        'click' : function() {
+                            window.open('http://www.mongodb.org')
+                        }
+                    }
                 },{
                     xtype: 'button',
                     width: 100,
                     height: 29,
                     margins: '10 10 10 10',
-                    iconCls:'product-scala-icon'
+                    iconCls:'product-scala-icon',
+                    listeners : {
+                        'click' : function() {
+                            window.open('http://www.scala-lang.org')
+                        }
+                    }
                 },{
                     xtype: 'button',
                     width: 100,
                     height: 64,
                     margins: '10 10 10 10',
-                    iconCls:'product-ext-icon'
+                    iconCls:'product-ext-icon',
+                    listeners : {
+                        'click' : function() {
+                            window.open('http://www.extjs.com')
+                        }
+                    }
+                },{
+                    xtype: 'button',
+                    maxWidth: 100,
+                    height: 30,
+                    margins: '10 10 10 10',
+                    iconCls:'product-book-icon',
+                    text:'<p>Kanban and Scrum  <br> making the most of both</p>',
+                    listeners : {
+                        'click' : function() {
+                            window.open('http://www.infoq.com/minibooks/kanban-scrum-minibook')
+                        }
+                    }
                 }
                 ]
             })]
@@ -59,8 +98,10 @@ Ext.onReady(function(){
             region: 'west',
             baseCls: 'x-plain',
             labelWidth: 100,
-            width: 620,
-            layout:'vbox',
+            width: 640,
+            autoScroll:true,
+            monitorValid:true,
+            layout: 'anchor',
             defaultType: 'textfield',
             margins: '20 20 20 20',
             standardSubmit: true,
@@ -80,18 +121,20 @@ about a business.</i>\n\
 <p align="right"><b>David Anderson</b></p><br/>\n\
 Kandash is a free open-source tool for Kanban.\n\
 The project is currently hosted at <a href=http://code.google.com/p/kandash/>Google Code</a>.',
-                margins: '20 20 20 20',
                 cls: 'big-label',
                 width: 600,
                 xtype:'label'
+            },{
+                xtype:'label',
+                html:'<br/><br/><br/><br/><br/><br/>'
             },new Ext.form.ComboBox({
                 fieldLabel: 'Board name',
                 hiddenName:'board',
                 valueField:'boardId',
                 width: 600,
                 id: 'boardCombo',
-                margins: '20 20 20 20',
                 displayField:'board',
+                allowBlank:false, 
                 store: new Ext.data.ArrayStore({
                     fields: ['boardId', 'board']
                 }),
@@ -106,7 +149,6 @@ The project is currently hosted at <a href=http://code.google.com/p/kandash/>Goo
                 text: 'Choose board',
                 xtype: 'button',
                 type: 'submit',
-                margins: '5 5 5 20',
                 iconCls: 'taskbar-useboard-icon',
                 handler: function(){
                     Ext.getCmp('boardList').getForm().submit()
@@ -114,7 +156,6 @@ The project is currently hosted at <a href=http://code.google.com/p/kandash/>Goo
             }, {
                 text: 'Create board',
                 xtype: 'button',
-                margins: '5 5 5 20',
                 iconCls: 'taskbar-addboard-icon',
                 handler: function(){
                     var boardName = Ext.getCmp('boardCombo').value

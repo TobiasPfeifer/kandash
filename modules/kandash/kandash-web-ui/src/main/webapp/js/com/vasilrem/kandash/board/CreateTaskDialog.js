@@ -8,6 +8,7 @@ var dialogTaskForm = new Ext.form.FormPanel({
     baseCls: 'x-plain',
     labelWidth: 100,
     defaultType: 'textfield',
+    monitorValid:true,
     items: [new Ext.form.ComboBox({
         fieldLabel: 'Project',
         hiddenName:'taskProject',
@@ -16,24 +17,29 @@ var dialogTaskForm = new Ext.form.FormPanel({
         typeAhead: true,
         mode: 'local',
         triggerAction: 'all',
+        allowBlank: false,
         emptyText:'Choose the project...',
         selectOnFocus:true,
         anchor: '100%'
     }),{
         fieldLabel: 'Summary',
         name: 'description',
+        allowBlank: false,
         anchor:'100%'
     },{
         fieldLabel: 'Assigned to',
         name: 'assignee',
+        allowBlank: false,
         anchor: '100%'
     }, {
         fieldLabel: 'Estimated (m/d)',
         name: 'estimation',
+        allowBlank: false,
         anchor: '100%'
     }, new Ext.form.ComboBox({
         fieldLabel: 'Priority',
         hiddenName:'priority',
+        allowBlank: false,
         store: new Ext.data.ArrayStore({
             fields: ['priorityId', 'priority'],
             data: [[0, 'Low'], [1, 'Medium'], [2, 'High']]
@@ -101,12 +107,14 @@ var updateTaskDialog = new Ext.Window({
     bodyStyle:'padding:5px;',
     buttonAlign:'center',
     items: dialogTaskForm,
-
     buttons: [{
         text: 'Save',
         type: 'submit',
         handler: function(){
             var form = Ext.getCmp('dialogTaskForm').getForm()
+            if(!form.isValid() || !parseInt(form.getEstimation())){
+                return
+            }
             var description = form.getSubject()
             var assignedTo = form.getAssignee()
             var estimation = form.getEstimation()
@@ -129,7 +137,7 @@ var updateTaskDialog = new Ext.Window({
                     board.addTask(null, projectId,
                         tierId,
                         description, assignedTo, estimation,
-                        priority, 20, 20)
+                        priority, 20, 20, true)
                 }
             }
             updateTaskDialog.hide()

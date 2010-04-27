@@ -17,6 +17,19 @@ label{
     font:normal 15px tahoma, arial, helvetica, sans-serif;
 }
 
+.button-ref{
+    font:normal 15px tahoma, arial, helvetica, sans-serif;
+    font-weight: bold;
+}
+
+.title{
+    font:normal 30px tahoma, arial, helvetica, sans-serif;
+}
+
+.title-small{
+    font:normal 15px tahoma, arial, helvetica, sans-serif;
+}
+
 .task-description{
     z-index: 20002;
     overflow:hidden;
@@ -1897,10 +1910,22 @@ body.x-body-masked .x-window-plain .x-window-mc {
     height: 64px !important;
 }
 
+.title-icon {
+    background-image: url('../images/kandash/chopsticks.jpg') !important;
+    background-repeat: no-repeat !important;
+    background-position: top center !important;
+    width: 100px !important;
+    height: 64px !important;
+}
+
 .product-scala-icon {
     background-image: url('../images/kandash/scala.JPG') !important;
     background-repeat: no-repeat !important;
     background-position: top center !important;
     width: 100px !important;
     height: 29px !important;
+}
+
+.product-book-icon {
+    background-image: url('../images/kandash/book-brown.png') !important;
 }

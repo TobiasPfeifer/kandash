@@ -11,11 +11,13 @@ var addTierForm = new Ext.form.FormPanel({
     items: [{
         fieldLabel: 'Name',
         name: 'tiername',
+        allowBlank: false,
         anchor: '100%'
     }, new Ext.form.ComboBox({
         fieldLabel: 'Starts after/swap with',
         hiddenName:'tierName',
         valueField:'tierPosition',
+        allowBlank: false,
         displayField:'tierName',
         typeAhead: true,
         mode: 'local',
@@ -26,6 +28,7 @@ var addTierForm = new Ext.form.FormPanel({
     }),{
         fieldLabel: 'Work-in-Progress',
         name: 'wiplimit',
+        allowBlank: false,
         anchor: '100%'
     }],
 
@@ -58,9 +61,11 @@ var addTierDialog = new Ext.Window({
         text: 'Save',
         type: 'submit',
         handler: function(){
-            var tierId            
-            if(addTierDialog.isUpdate){
-                
+            var tierId
+            if(!addTierForm.isValid() || !parseInt(addTierForm.getWipLimit())){
+                return
+            }
+            if(addTierDialog.isUpdate){                
                 var tierCell = addTierDialog.isUpdate
                 tierId = tierCell.id.substr(
                     tierCell.id.indexOf('_') + 1, tierCell.id.length)
