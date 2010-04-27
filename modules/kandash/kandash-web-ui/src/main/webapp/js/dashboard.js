@@ -48,6 +48,10 @@ Ext.onReady(function(){
             region: 'south',
             layout:'fit',
             height:30,
+            items: new Ext.ProgressBar({
+                id:'taskLoadProgress',
+                width:300
+            }),
             tbar: []
         }]
     });

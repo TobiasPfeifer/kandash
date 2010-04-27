@@ -10,7 +10,17 @@ body {
 }
 
 label{
+    font-size: 11px;
+}
+
+.big-label{
     font:normal 15px tahoma, arial, helvetica, sans-serif;
+}
+
+.task-description{
+    z-index: 20002;
+    overflow:hidden;
+    zoom:1;
 }
 
 .ext-el-mask {

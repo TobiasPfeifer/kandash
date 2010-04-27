@@ -63,14 +63,13 @@ getProjectById = function(board, projectId){
  * @param tierId tier identifier
  **/
 getTierById = function(board, tierId){
-    var tier
-    board.tiers.forEach(function(t){
-        if(t._id.toString() == tierId.toString()){
-            tier = t
+    for(tId in board.tiers){
+        var t = board.tiers[tId]
+        if(t._id && t._id.toString() == tierId.toString()){
+            return t
         }
-    })
-    print('tier: ' + tier)
-    return tier
+    }
+    return null
 }
 
 /**
@@ -332,7 +331,6 @@ storeTierStatistics = function(chartPointGroupId, tier, taskCount){
     }, {
         _id: 1
     })
-    print('Storing statistics for ' + tier.name + ', count ' + taskCount + ', ' + chartPointGroupId)
     if(isPointExists)
         db.chartpointgroups.update({
             _id: chartPointGroupId,
@@ -402,15 +400,18 @@ getDoneTier = function(workflowId){
 getTaskCount = function(workflowId, date){
     var doneTierId = getDoneTier(workflowId)._id
     var notdoneCount = 0
-    var doneCount
-    db.chartpointgroups.findOne({
+    var doneCount = 0
+    var chartpointgroup = db.chartpointgroups.findOne({
         date: new RegExp(date.substring(0, 10)),
         workflowId: workflowId
-    }).tiers.forEach(function(tier){
-        if(tier.tierId.toString() == doneTierId.toString())
-            doneCount = tier.count
-        notdoneCount += tier.count
     })
+    if(chartpointgroup){
+        chartpointgroup.tiers.forEach(function(tier){
+            if(tier.tierId.toString() == doneTierId.toString())
+                doneCount = tier.count
+            notdoneCount += tier.count
+        })
+    }
     return {
         notdoneCount: notdoneCount,
         doneCount: doneCount

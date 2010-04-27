@@ -59,21 +59,21 @@ com.vasilrem.kandash.board.Task = Ext.extend(Ext.Panel, {
 
     setFormTitle: function(title){
         this.setTitle(title)
-        this.getForm().items.items[0].update(title)
+    //this.getForm().items.items[0].update(title)
     },
 
     setFormAssignedTo: function(assignedTo){
-        this.getForm().items.items[1].update(assignedTo)
+        //this.getForm().items.items[1].update(assignedTo)
         this.assignedTo = assignedTo
     },
 
     setFormEstimation: function(estimation){        
-        this.getForm().items.items[2].update('' + estimation)
+        //this.getForm().items.items[2].update('' + estimation)
         this.estimation = estimation
     },
 
     setFormPriority: function(priority){
-        this.getForm().items.items[3].update(getPriorityById(priority))
+        //this.getForm().items.items[3].update(getPriorityById(priority))
         this.el.dom.getElementsByClassName(
             'x-panel-tc-'+
             getPriorityById(this.priority).toLowerCase()

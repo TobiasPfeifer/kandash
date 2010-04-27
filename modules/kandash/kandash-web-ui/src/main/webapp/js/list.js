@@ -24,9 +24,9 @@ Ext.onReady(function(){
             layout: 'anchor',
             margins: '40 40 40 40',
             items: [{
-                 baseCls: 'x-plain',
-                 bodyStyle: 'font:normal 20px tahoma, arial, helvetica, sans-serif',
-                 html: 'Powered with:'
+                baseCls: 'x-plain',
+                bodyStyle: 'font:normal 20px tahoma, arial, helvetica, sans-serif',
+                html: 'Powered with:'
             },new Ext.form.FormPanel({
                 baseCls: 'x-plain',
                 layout:'hbox',
@@ -81,6 +81,7 @@ about a business.</i>\n\
 Kandash is a free open-source tool for Kanban.\n\
 The project is currently hosted at <a href=http://code.google.com/p/kandash/>Google Code</a>.',
                 margins: '20 20 20 20',
+                cls: 'big-label',
                 width: 600,
                 xtype:'label'
             },new Ext.form.ComboBox({
