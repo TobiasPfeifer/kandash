@@ -194,17 +194,22 @@ updateTiersOrder = function(boardId, startingFromOrder, incrementor) {
  * @return chart point group
  **/
 getWorkflowChartPointGroup = function(projectIds, date, tierOrders){
-    var yesterday = new Date(date)
-    yesterday.setDate(yesterday.getDate() - 1)
+    var tomorrow = new Date(date)
+    tomorrow.setDate(tomorrow.getDate() + 1)
+    print('looking for chartPointGroup ')
+    print('workflowId: ' + projectIds)
+    print('tomorrow: ' + toISO(tomorrow))
+    print('date: ' + toISO(date))
     var chartPointGroup = db.chartpointgroups.findOne({
         "workflowId" : {
             $in : projectIds
         },
         date : {
-            $gt:toISO(yesterday),
-            $lt:toISO(date)
+            $gte:toISO(date),
+            $lt:toISO(tomorrow)
         }
     })
+    print('chartPointGroup: ' + chartPointGroup)
     if(chartPointGroup){
         chartPointGroup.tiers.sort(function(tierA, tierB){
             if(tierOrders[tierA.tierId] < tierOrders[tierB.tierId]) return -1
@@ -265,8 +270,11 @@ getWorkflowChartModel = function(boardId, scale, projectId) {
 
     var upperBound = new Date()
     var middleBound = new Date(lowerBound)
+    middleBound.setMilliseconds(upperBound.getMilliseconds())
+    middleBound.setSeconds(upperBound.getSeconds())
+    middleBound.setMinutes(upperBound.getMinutes())
+    middleBound.setHours(upperBound.getHours())
     var tierOrders = getTierOrders(boardId)
-
     while(middleBound < upperBound){
         pointGroup = getWorkflowChartPointGroup(projectIds, middleBound, tierOrders)
         if(pointGroup)
@@ -300,12 +308,12 @@ getWorkflowChartModel = function(boardId, scale, projectId) {
 getTodayChartPointGroup = function(workflowId){
     var query = {
         workflowId: workflowId,
-        date: toISO(new Date()),
-        leadTime: calculateLeadTime(workflowId, toISO(new Date()))
+        date: toISO(new Date())
     }
     var chartPointGroup = db.chartpointgroups.findOne(query)
     if(!chartPointGroup){
         query.tiers = []
+        query.leadTime = calculateLeadTime(workflowId, toISO(new Date()))
         db.chartpointgroups.insert(query)
         chartPointGroup = db.chartpointgroups.findOne(query)
     }
@@ -356,22 +364,22 @@ storeTierStatistics = function(chartPointGroupId, tier, taskCount){
  */
 trackBoardsState = function(){
     db.dashboardmodels.find().forEach(function(board){
-        board.workflows.forEach(function(workflow){            
+        board.workflows.forEach(function(workflow){
             var chartPointGroup = getTodayChartPointGroup(workflow._id)
             var doneTier = getDoneTier(workflow._id)
             board.tiers.forEach(function(tier){
                 var count
-                if(tier._id.toString() == doneTier._id.toString()){                    
+                if(tier._id.toString() == doneTier._id.toString()){
                     count = db.taskupdatefacts.group({
                         key: {
                             'task._id':true
-                        }, 
+                        },
                         cond:{
                             "task.tierId" :  tier._id
-                        }, 
+                        },
                         reduce: function(obj,prev){
                             prev.count++
-                        }, 
+                        },
                         initial: {
                             count: 0
                         }
@@ -383,6 +391,13 @@ trackBoardsState = function(){
                     }).length
                 }
                 storeTierStatistics(chartPointGroup._id, tier, count)
+                db.chartpointgroups.update({
+                    _id: chartPointGroup._id
+                }, {
+                    $set:{
+                        leadTime: calculateLeadTime(workflow._id, toISO(new Date()))
+                    }
+                })
             })
         })
     })

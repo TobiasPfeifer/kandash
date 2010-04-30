@@ -31,7 +31,7 @@ label{
 }
 
 .task-description{
-    z-index: 20002;
+    z-index: 1;
     overflow:hidden;
     zoom:1;
 }
@@ -1870,6 +1870,14 @@ body.x-body-masked .x-window-plain .x-window-mc {
     background-image: url('../images/kandash/addboard.png') !important;
 }
 
+.taskbar-board-icon {
+    background-image: url('../images/kandash/sticky-notes-stack.png') !important;
+}
+
+.taskbar-deleteboard-icon {
+    background-image: url('../images/kandash/scissors.png') !important;
+}
+
 .taskbar-useboard-icon {
     background-image: url('../images/kandash/useboard.png') !important;
 }
@@ -1890,8 +1898,8 @@ body.x-body-masked .x-window-plain .x-window-mc {
     background-image: url('../images/kandash/report.png') !important;
 }
 
-.taskbar-board-icon {
-    background-image: url('../images/kandash/board.png') !important;
+.taskbar-add-icon {
+    background-image: url('../images/kandash/plus.png') !important;
 }
 
 .product-mongo-icon {
@@ -1927,5 +1935,9 @@ body.x-body-masked .x-window-plain .x-window-mc {
 }
 
 .product-book-icon {
-    background-image: url('../images/kandash/book-brown.png') !important;
+    background-image: url('../images/kandash/scrumandkanban.jpg') !important;
+    background-repeat: no-repeat !important;
+    background-position: top center !important;
+    width: 100px !important;
+    height: 34px !important;
 }

@@ -40,8 +40,8 @@ class TaskResource(kandashService: KandashService) {
   def createTask(@PathParam("boardId") boardId:String,
                  @Context headers: HttpHeaders, in: Array[Byte]): String = {
     log.info("Create new task")
-    kandashService.add[Task](boardId,
-                             Serialization.read[Task](new String(in)))
+    kandashService.addTask(boardId,
+                           Serialization.read[Task](new String(in)))
   }
 
   /**

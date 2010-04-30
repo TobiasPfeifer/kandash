@@ -81,10 +81,9 @@ Ext.onReady(function(){
                 },{
                     xtype: 'button',
                     maxWidth: 100,
-                    height: 30,
+                    height: 34,
                     margins: '10 10 10 10',
                     iconCls:'product-book-icon',
-                    text:'<p>Kanban and Scrum  <br> making the most of both</p>',
                     listeners : {
                         'click' : function() {
                             window.open('http://www.infoq.com/minibooks/kanban-scrum-minibook')

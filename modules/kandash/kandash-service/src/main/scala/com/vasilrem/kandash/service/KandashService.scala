@@ -73,12 +73,10 @@ trait KandashService extends JObjectBuilder{
   def getDashboardByName(name:String):DashboardModel = DashboardModel.find("name", name).get
 
   /**
-   * Gets task by identifier
-   * @val taskId task ID
-   * @return task
+   * Removes dashboard with all tasks, tiers and workflows
+   * @val boardId board identifier
    */
-  /*def getTaskById(taskId: String):Task = DashboardModel.find(("tasks._id" -> taskId)).get.
-   tasks.find(_.id == taskId).get*/
+  def removeDashboard(boardId: String) = DashboardModel.delete(("_id" -> boardId))
 
   /**
    * Gets list of dashboards from backend (only id's and names are filled)

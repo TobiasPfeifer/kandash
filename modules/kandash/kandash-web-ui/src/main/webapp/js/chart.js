@@ -205,8 +205,7 @@ Ext.onReady(function(){
                         },
                         {
                             header: 'State',
-                            width: 75,
-                            hidden: true
+                            width: 75
                         },
                         {
                             header: 'Assignee',
@@ -227,8 +226,7 @@ Ext.onReady(function(){
                         },
                         {
                             header: 'Date Updated',
-                            width: 75,
-                            hidden: true
+                            width: 80
                         }
                         ],
                         stripeRows: true,
@@ -306,7 +304,7 @@ Ext.onReady(function(){
             success: function(response) {
                 var chartModel = Ext.decode(response.responseText)
                 var fields = ['date', 'leadTime']
-                var data = []
+                var data = [new Object()]
                 var series = []
                 chartModel.chartGroups.forEach(function(pointGroup){
                     var dataRecord = new Object()
@@ -318,7 +316,6 @@ Ext.onReady(function(){
                         pointsSum += point.count
                         if(!series[i]){
                             fields[i + 2] = 'id' + point.tierId
-                            var color = '0x' + i + i + i + i + i + i
                             series[i] = {
                                 displayName: point.tierName,
                                 yField: 'id' + point.tierId
@@ -327,6 +324,11 @@ Ext.onReady(function(){
                         dataRecord['id' + point.tierId] = pointsSum
                     })
                 })
+                var startRecord = new Object()
+                fields.forEach(function(field){
+                    startRecord[field] = ''
+                })
+                data[0] = startRecord
                 series[series.length] = {
                     displayName: 'Lead Time',
                     yField: 'leadTime',
@@ -394,12 +396,21 @@ Ext.onReady(function(){
         board.lastQuery = query
     }
 
+    function setCurrentTime(date){
+        var copy = new Date(date)
+        var currentDate = new Date()
+        copy.setHours(currentDate.getHours())
+        copy.setMinutes(currentDate.getMinutes())
+        copy.setSeconds(currentDate.getSeconds())
+        return copy
+    }
+
     function initReport(board, fromDate, toDate, query){
         var data = []
         if(!query) query = new Object()
         query['updateDate'] = {
             $gt: fromDate,
-            $lt: toDate
+            $lt: setCurrentTime(toDate)
         }
         var encodedQuery = Ext.encode(query).replace(/"ObjectId\(\'([a-z0-9]+)\'\)\"/gi, 'ObjectId(\'$1\')')
         var reportModel = Ext.decode(GET(RESOURCES + RS_REPORTMODEL
@@ -413,9 +424,9 @@ Ext.onReady(function(){
             entry.tier.name,
             task.assigneeId,
             task.estimation,
-            entry.daysActive,
-            entry.taskCreated,
-            entry.taskFact.updateDate]
+            Math.round(entry.daysActive),
+            entry.taskCreated.substring(0, 10),
+            entry.taskFact.updateDate.substring(0, 10)]
         })
         Ext.getCmp('historygrid').store.loadData(data)
     }

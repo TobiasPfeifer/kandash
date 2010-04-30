@@ -52,4 +52,14 @@ class BoardResource(kandashService: KandashService) {
     Serialization.write(kandashService.getDashboardById(boardId))
   }
 
+  /**
+   * Removes board
+   * @val boardId identifier of the board to be removed
+   */
+  @DELETE @Path("/{boardId}")
+  def deleteBoard(@PathParam("boardId") boardId:String) = {
+    log.info("Delete board " + boardId)
+    kandashService.removeDashboard(boardId)
+  }
+
 }
