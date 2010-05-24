@@ -22,8 +22,8 @@ updateTask = function(task1, task2){
         task1.el.moveTo(task1.el.getXY()[0] + offsetLeft,task1.el.getXY()[1] + offsetTop, animCfgObj);
     if(task1.getFormTitle() != task2.description)
         task1.setFormTitle(task2.description)
-    if(task1.assignedTo != task2.assignedTo)
-        task1.setFormAssignedTo(task2.assignedTo)
+    if(task1.assignedTo != task2.assigneeId)
+        task1.setFormAssignedTo(task2.assigneeId)
     if(task1.estimation != task2.estimation)
         task1.setFormEstimation(task2.estimation)
     if(task1.priority != task2.priority)
@@ -44,18 +44,18 @@ removeTask = function(taskId){
 createTask = function(task){
     getBoard().addTaskOnUI(task._id, task.workflowId,
         task.tierId,
-        task.description, task.assignedTo, task.estimation,
-        task.priority, 20, 20)
+        task.description, task.assigneeId, task.estimation,
+        task.priority, 20, 20, true)
 }
 
 monitorTasks = function(boardId){
-    ajaxCall(RESOURCES + RS_TASK + '/' + boardId, function(response){
+    ajaxCall(RESOURCES + RS_TASK + '/' + boardId, function(response){        
         setTimeout("monitorTasks('" + boardId + "')", 100)
         var taskResponse = eval("(" + response.responseText.substr(0, response.responseText.length / 2) + ")")
         if(taskResponse.remove){
             removeTask(taskResponse.remove)
             return
-        }
+        }        
         var taskOnBoard = Ext.getCmp(taskResponse._id)
         if(!taskOnBoard){
             createTask(taskResponse)

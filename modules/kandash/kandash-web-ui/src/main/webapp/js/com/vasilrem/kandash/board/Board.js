@@ -185,6 +185,7 @@ com.vasilrem.kandash.board.Board = Ext.extend(Ext.Panel, {
         priority, offsetLeft, offsetTop, doRefresh){
         var boardCell = this.boardGrid[projectId][tierId]
         boardCell.expand(false)
+        
         var task = {
             xtype: 'kandash.task',
             id: taskId,
@@ -197,6 +198,7 @@ com.vasilrem.kandash.board.Board = Ext.extend(Ext.Panel, {
             listeners : {
                 'render' : function(thisCmp) {
                     thisCmp.on("expand", function(){
+                        
                         var form = new com.vasilrem.kandash.board.TaskForm(this.title,
                             this.assignedTo,this.estimation,this.priority)
                         this.add(form)

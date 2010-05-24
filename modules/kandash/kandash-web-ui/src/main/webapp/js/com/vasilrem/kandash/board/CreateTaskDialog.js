@@ -17,7 +17,7 @@ var dialogTaskForm = new Ext.form.FormPanel({
         typeAhead: true,
         mode: 'local',
         triggerAction: 'all',
-        allowBlank: false,
+        allowBlank: true,
         emptyText:'Choose the project...',
         selectOnFocus:true,
         anchor: '100%'
@@ -112,14 +112,15 @@ var updateTaskDialog = new Ext.Window({
         type: 'submit',
         handler: function(){
             var form = Ext.getCmp('dialogTaskForm').getForm()
+            
             if(!form.isValid() || !parseInt(form.getEstimation())){
                 return
-            }
+            }            
             var description = form.getSubject()
             var assignedTo = form.getAssignee()
             var estimation = form.getEstimation()
             var priority = form.getPriority()
-            var board = getBoard()
+            var board = getBoard()            
             if(this.ownerCt.ownerCt.taskId){
                 var task = Ext.getCmp(this.ownerCt.ownerCt.taskId)
                 task.setFormTitle(description)
@@ -136,7 +137,7 @@ var updateTaskDialog = new Ext.Window({
                 }else{
                     board.addTask(null, projectId,
                         tierId,
-                        description, assignedTo, estimation,
+                        description, assignedTo, parseInt(estimation),
                         priority, 20, 20, true)
                 }
             }
@@ -151,6 +152,7 @@ var updateTaskDialog = new Ext.Window({
 });
 
 function showTaskDialog(isCreateDialog, taskId, description, assignedTo, estimation, priority){
+
     var projects = getBoard().getProjects()
     dialogTaskForm.setSubject(description)
     dialogTaskForm.setAssignee(assignedTo)

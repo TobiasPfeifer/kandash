@@ -30,8 +30,10 @@ class UsageTracking extends Actor {
       val dashboard = DashboardModel.find(("tasks._id" -> task._id)).get
       val oldTask = dashboard.tasks.find{oldTask => oldTask._id == task._id}.get
       val tierIsChanged: Boolean = oldTask.tierId != task.tierId
-      reply(tierIsChanged)
+      //reply(tierIsChanged)
       if(tierIsChanged) TaskUpdateFact(ObjectId.get.toString, dashboard._id, task, new java.util.Date).save
+
+    case x: Any => log.error("Unprocessable message " + x + " at UsageTracking")
   }
 
 }

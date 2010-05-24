@@ -15,6 +15,7 @@ import com.vasilrem.kandash.service._
 import com.vasilrem.kandash.resources._
 import net.liftweb.json._
 import net.liftweb.json.Serialization.{read, write, formats}
+import org.atmosphere.cpr._
 
 class TaskResourceSpecTest extends SpecificationWithJUnit {
 
@@ -54,7 +55,7 @@ class TaskResourceSpecTest extends SpecificationWithJUnit {
   "Create task" in {
     val boardId = boardResource.createBoard("test-board")
     sleep
-    taskResource.createTask(boardId,
+    taskResource.createTask(new DefaultBroadcaster(boardId),
                             null,
                             Serialization.write(testTask).getBytes) must notBeNull
   }
@@ -62,22 +63,22 @@ class TaskResourceSpecTest extends SpecificationWithJUnit {
   "Update task" in {
     val boardId = boardResource.createBoard("test-board")
     sleep
-    val taskId = taskResource.createTask(boardId,
+    val taskId = taskResource.createTask(new DefaultBroadcaster(boardId),
                                          null,
-                                         Serialization.write(testTask).getBytes)
+                                         Serialization.write(testTask).getBytes).message.toString
     sleep
-    taskResource.updateTask(null,
+    taskResource.updateTask(new DefaultBroadcaster(boardId), null,
                             Serialization.write(updatedTask(taskId)).getBytes) must notBeNull
   }
 
   "Delete task" in {
     val boardId = boardResource.createBoard("test-board")
     sleep
-    val taskId = taskResource.createTask(boardId,
+    val taskId = taskResource.createTask(new DefaultBroadcaster(boardId),
                                          null,
-                                         Serialization.write(testTask).getBytes)
+                                         Serialization.write(testTask).getBytes).message.toString
     sleep
-    taskResource.deleteTask(taskId)
+    taskResource.deleteTask(new DefaultBroadcaster(boardId), taskId)
   }
 
   doAfterSpec{

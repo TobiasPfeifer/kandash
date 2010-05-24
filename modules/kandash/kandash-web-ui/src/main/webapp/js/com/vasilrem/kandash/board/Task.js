@@ -11,6 +11,7 @@ com.vasilrem.kandash.board.Task = Ext.extend(Ext.Panel, {
         id: 'gear',
         qtip: 'Update',
         handler: function(event, toolEl, task){
+            
             showTaskDialog(false, task.id, task.title, task.assignedTo,
                 task.estimation, task.priority)
         }
@@ -101,10 +102,10 @@ com.vasilrem.kandash.board.Task = Ext.extend(Ext.Panel, {
             '_id': this.id,
             'assigneeId': this.assignedTo, // TO CHANGE: assignee name should be replaced with assignee ID
             'description': this.title,
-            'estimation': this.estimation,
+            'estimation': parseInt(this.estimation),
             'offsetLeft': this.x, // TO CHANGE: relative offset left
             'offsetTop': this.y, // TO CHANGE: relative offset top
-            'priority': this.priority,
+            'priority': parseInt(this.priority),
             'tierId': this.ownerCt.id.substr(
                 this.ownerCt.id.indexOf('_') + 1, this.ownerCt.id.length),
             'workflowId': this.ownerCt.ownerCt.id
@@ -155,7 +156,7 @@ com.vasilrem.kandash.board.Task.DropZone = Ext.extend(Ext.dd.DDProxy, {
                 task.y = 0
             }
             el.setXY(dragEl.getXY());
-            el.setWidth(dragEl.getWidth());
+            el.setWidth(dragEl.getWidth());            
             PUT(RESOURCES + RS_TASK + '/' + getBoard().id, task.toJSON())
             this.lastTarget = null;
         }else{

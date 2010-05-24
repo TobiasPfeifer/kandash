@@ -61,7 +61,7 @@ class BoardResource extends KandashPersistenceUtil{
   @DELETE @Path("/{boardId}")
   def deleteBoard(@PathParam("boardId") boardId:String) = {
     log.info("Delete board " + boardId)
-    kandashService.removeDashboard(boardId)
+    kandashService ! RemoveDashboard(boardId)
   }
 
 }

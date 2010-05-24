@@ -19,4 +19,11 @@
                 <goal>install</goal>
             </goals>
         </action>
+        <action>
+            <actionName>build</actionName>
+            <goals>
+                <goal>install</goal>
+                <goal>-o</goal>
+            </goals>
+        </action>
     </actions>

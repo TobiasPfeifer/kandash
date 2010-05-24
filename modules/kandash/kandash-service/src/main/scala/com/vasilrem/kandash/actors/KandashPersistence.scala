@@ -16,6 +16,7 @@ import net.liftweb.json.JsonAST._
 import net.liftweb.json._
 import com.mongodb._
 import com.vasilrem.kandash.mongo._
+import se.scalablesolutions.akka.util.Logging
 
 sealed trait PersistenceEvent
 
@@ -33,7 +34,7 @@ case class RemoveDashboard(boardId: String) extends PersistenceEvent
 
 import se.scalablesolutions.akka.patterns._
 
-class KandashPersistence extends Actor with JObjectBuilder with KandashPersistenceUtil{
+class KandashPersistence extends Actor with JObjectBuilder with KandashPersistenceUtil with Logging{
 
   lazy val usageTrackingActor = KandashActors.usageTrackingActor
   lazy val preparedFunction = new PreparedFunction
@@ -200,6 +201,8 @@ class KandashPersistence extends Actor with JObjectBuilder with KandashPersisten
     case RemoveProject(projectId) =>
       removeTasksFromContainer(projectId, Workflow.collectionName)
       remove(projectId, Workflow.collectionName)
+
+    case x: Any => log.error("Unprocessable message " + x + " at KandashPersistence")
 
   }
 
