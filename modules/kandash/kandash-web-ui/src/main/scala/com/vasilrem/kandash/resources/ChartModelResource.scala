@@ -8,6 +8,7 @@ package com.vasilrem.kandash.resources
 import javax.ws.rs._
 import javax.ws.rs.core._
 import com.vasilrem.kandash.service._
+import com.vasilrem.kandash.actors.KandashActors
 import com.vasilrem.kandash.model._
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -18,9 +19,10 @@ import net.liftweb.json.Serialization.{read, write, formats}
  * REST-endpoint to work with chart models
  */
 @Path("/chartmodel")
-class ChartModelResource(kandashService: KandashService, reportingService: ReportingService) {
+class ChartModelResource {
 
-  def this() = this(KandashServiceInstance, ReportingServiceInstance)
+  val kandashService = KandashActors.kandashPersistenceActor
+  val reportingService = KandashActors.reportingActor
 
   val log = LogFactory.getLog(this.getClass)
 
@@ -54,9 +56,10 @@ class ChartModelResource(kandashService: KandashService, reportingService: Repor
     log.info("Getting chart model for board " + boardId + 
              " with scale " + scale + " for project " + projectId)
     Serialization.write(
-      reportingService.getWorkflowChartModel(boardId,
+      (reportingService !! GetWorkflowChartModel(boardId,
                                              Scale.valueOf(scale).getOrElse(Scale.month).id,
                                              if(projectId == null) None else Some(projectId)))
+      .get.asInstanceOf[ChartModel])
   }
 
   /**

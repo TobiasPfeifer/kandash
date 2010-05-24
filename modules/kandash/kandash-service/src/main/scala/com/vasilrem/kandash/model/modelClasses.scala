@@ -5,7 +5,7 @@
 
 package com.vasilrem.kandash.model
 
-import com.eltimn.scamongo._
+import net.liftweb.mongodb._
 import java.util.Date
 import scala.reflect.BeanInfo
 import com.mongodb._
@@ -117,7 +117,7 @@ case class DashboardModel(_id:String, name:String, tiers:List[Tier], workflows:L
 
   /**
    * Gets tier by specified order
-   * @val order order of the tier on the board (0 - done (last tier))
+   * @param order order of the tier on the board (0 - done (last tier))
    */
   def getTierByOrder(order: Int): Tier = tiers.find(_.order == order).get
 
@@ -127,9 +127,12 @@ object DashboardModel extends MongoDocumentMeta[DashboardModel] {
   override def collectionName = "dashboardmodels"
 }
 
+@BeanInfo
+case class DashboardsList(list: List[DashboardModel])
+
 /**
  * Represents report model based on task modifications
- * @val reportModelRecords list of model records
+ * @param reportModelRecords list of model records
  */
 @BeanInfo
 case class ReportModel(taskHistoryEntries: List[ReportModelRecord])
@@ -139,7 +142,7 @@ case class ReportModelRecord(taskFact: TaskUpdateFact, workflow: Workflow, tier:
 
 /**
  * Chart model consisting of chart point groups
- * @val chartGroups groups of chart points
+ * @param chartGroups groups of chart points
  */
 @BeanInfo
 case class ChartModel(chartGroups: List[ChartPointGroup])
@@ -147,10 +150,10 @@ case class ChartModel(chartGroups: List[ChartPointGroup])
 /**
  * Represents group of chart points (association of the data and count of tasks
  * assigned during the specified period per tier)
- * @val workflowId identifier of the workflow
- * @val leadTime average time required to complete the task
- * @val date date on the chart
- * @val tiers association of the data and count of tasks
+ * @param workflowId identifier of the workflow
+ * @param leadTime average time required to complete the task
+ * @param date date on the chart
+ * @param tiers association of the data and count of tasks
  * completed during the specified period per tier
  */
 @BeanInfo

@@ -6,25 +6,16 @@
 package com.vasilrem.kandash.mongo
 
 import java.io._
-import com.eltimn.scamongo._;
+import net.liftweb.mongodb._
 import com.vasilrem.kandash.model._;
 import net.liftweb.json.JsonDSL._
 import net.liftweb.json.JsonAST._
 import net.liftweb.json._
 import com.mongodb._
-import java.util.Date
+import se.scalablesolutions.akka.stm.Transaction
+import Transaction.Global._
 
-trait PreparedFunction {
-
-  /** mongo host */
-  val host:String
-  /** mongo port */
-  val port:Int
-  /** mongo database name */
-  val database:String
-
-  /** instantiates new connection to mongo */
-  MongoDB.defineDb(DefaultMongoIdentifier, MongoAddress(MongoHost(host, port), database))
+class PreparedFunction {
 
   /** Serialization into JSON goes w/o any type hints */
   implicit val formats = Serialization.formats(NoTypeHints)
@@ -48,7 +39,7 @@ trait PreparedFunction {
 
   /**
    * Creates prepared functions from classpath resources in Mongo
-   * @val classPathResources list of resource names in classpath
+   * @param classPathResources list of resource names in classpath
    */
   def loadPreparedFunctions(classPathResources: List[String]) = {
     classPathResources.foreach {
@@ -73,10 +64,10 @@ trait PreparedFunction {
 
   /**
    * Calls prepared function with specified list of arguments
-   * @val functionCall function call with inlined arguments
+   * @param functionCall function call with inlined arguments
    * @return result of function call
    */
-  def call(functionCall: String): Object = {
+  def call(functionCall: String): Object = {    
     var ret:Object = null
     println("Calling " + functionCall)
     MongoDB.use(DefaultMongoIdentifier) ( db => {

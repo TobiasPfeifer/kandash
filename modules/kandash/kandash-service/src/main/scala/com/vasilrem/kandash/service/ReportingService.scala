@@ -5,7 +5,7 @@
 
 package com.vasilrem.kandash.service
 
-import com.eltimn.scamongo._;
+import net.liftweb.mongodb._
 import com.vasilrem.kandash.model._;
 import net.liftweb.json.JsonDSL._
 import net.liftweb.json.JsonAST._
@@ -13,20 +13,27 @@ import net.liftweb.json._
 import com.mongodb._
 import java.util.Date
 import com.vasilrem.kandash.mongo._
+import se.scalablesolutions.akka.actor.Actor
 
-trait ReportingService extends JObjectBuilder{
+sealed trait ReportingEvent
 
-  /** mongo host */
-  val host:String
-  /** mongo port */
-  val port:Int
-  /** mongo database name */
-  val database:String
+case class GetReportModel(boardId: String, filter: String) extends ReportingEvent
+case class GetMonthlyWorkflowChartModel(boardId: String, projectId: Option[String]) extends ReportingEvent
+case class GetWeeklyWorkflowChartModel(boardId: String, projectId: Option[String]) extends ReportingEvent
+case class GetDailyWorkflowChartModel(boardId: String, projectId: Option[String]) extends ReportingEvent
+case class GetWorkflowChartModel(boardId: String, chartType: Int, projectId: Option[String]) extends ReportingEvent
 
-  val preparedFunction:PreparedFunction
+class ReportingService extends Actor with JObjectBuilder{
 
-  /** instantiates new connection to mongo */
-  MongoDB.defineDb(DefaultMongoIdentifier, MongoAddress(MongoHost(host, port), database))
+  lazy val preparedFunction = new PreparedFunction
+
+  def receive = {
+    case GetReportModel(boardId, filter) => reply(getReportModel(boardId, filter))
+    case GetMonthlyWorkflowChartModel(boardId, projectId) => reply(getMonthlyWorkflowChartModel(boardId, projectId))
+    case GetWeeklyWorkflowChartModel(boardId, projectId) => reply(getWeeklyWorkflowChartModel(boardId, projectId))
+    case GetDailyWorkflowChartModel(boardId, projectId) => reply(getDailyWorkflowChartModel(boardId, projectId))
+    case GetWorkflowChartModel(boardId, chartType, projectId) => reply(getWorkflowChartModel(boardId, chartType, projectId))
+  }
 
   /**
    * Gets model for the report grid
@@ -34,7 +41,7 @@ trait ReportingService extends JObjectBuilder{
    * @val filter JSON/mongo query
    * @return grid model
    */
-  def getReportModel(boardId: String, filter: String): ReportModel = {
+  private def getReportModel(boardId: String, filter: String): ReportModel = {
     Serialization.read[ReportModel](preparedFunction.call(
         "getReportModel('" + boardId + "', " + filter.replaceAll("\"", "'") + ")").toString)
   }
@@ -46,7 +53,7 @@ trait ReportingService extends JObjectBuilder{
    * projects on the board, if not specified)
    * @return chart model
    */
-  def getMonthlyWorkflowChartModel(boardId: String, projectId: Option[String]): ChartModel =
+  private def getMonthlyWorkflowChartModel(boardId: String, projectId: Option[String]): ChartModel =
     getWorkflowChartModel(boardId, 2, projectId)
 
   /**
@@ -56,7 +63,7 @@ trait ReportingService extends JObjectBuilder{
    * projects on the board, if not specified)
    * @return chart model
    */
-  def getWeeklyWorkflowChartModel(boardId: String, projectId: Option[String]): ChartModel =
+  private def getWeeklyWorkflowChartModel(boardId: String, projectId: Option[String]): ChartModel =
     getWorkflowChartModel(boardId, 1, projectId)
 
   /**
@@ -66,7 +73,7 @@ trait ReportingService extends JObjectBuilder{
    * projects on the board, if not specified)
    * @return chart model
    */
-  def getDailyWorkflowChartModel(boardId: String, projectId: Option[String]): ChartModel =
+  private def getDailyWorkflowChartModel(boardId: String, projectId: Option[String]): ChartModel =
     getWorkflowChartModel(boardId, 0, projectId)
 
   /**
@@ -77,7 +84,7 @@ trait ReportingService extends JObjectBuilder{
    * projects on the board, if not specified)
    * @return chart model
    */
-  def getWorkflowChartModel(boardId: String, chartType: Int, projectId: Option[String]): ChartModel = {
+  private def getWorkflowChartModel(boardId: String, chartType: Int, projectId: Option[String]): ChartModel = {
     Serialization.read[ChartModel](preparedFunction.call(
         "getWorkflowChartModel('" + boardId + "', " + chartType + ", '" + projectId.getOrElse("") + "')").toString)
   }

@@ -126,7 +126,7 @@ var updateTaskDialog = new Ext.Window({
                 task.setFormAssignedTo(assignedTo)
                 task.setFormEstimation(estimation)
                 task.setFormPriority(priority)
-                PUT(RESOURCES + RS_TASK, task.toJSON())
+                PUT(RESOURCES + RS_TASK + '/' + board.id, task.toJSON())
             }else{
                 
                 var projectId = form.getProject()

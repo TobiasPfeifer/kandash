@@ -7,10 +7,10 @@ package com.vasilrem.kandash.resources
 
 import org.specs._
 import java.util.Date
-import com.eltimn.scamongo._;
 import com.vasilrem.kandash.model._;
 import net.liftweb.json.JsonDSL._
 import com.mongodb.ObjectId
+import com.vasilrem.kandash.runtime.TestBoot
 import com.vasilrem.kandash.service._
 import com.vasilrem.kandash.resources._
 import net.liftweb.json._
@@ -18,15 +18,16 @@ import net.liftweb.json.Serialization.{read, write, formats}
 
 class TaskResourceSpecTest extends SpecificationWithJUnit {
 
+  TestBoot
   /**
    * Type hint for serialization/deserialization
    */
   implicit val formats = Serialization.formats(NoTypeHints)
 
-  val boardResource = new BoardResource(KandashServiceTestInstance)
-  val taskResource = new TaskResource(KandashServiceTestInstance)
-
-  val boardId = boardResource.createBoard("test-board")
+  val boardResource = new BoardResource
+  val taskResource = new TaskResource
+  def sleep = Thread.sleep(500)
+  
   val testTask =  new Task(null,
                            new Some("unknown"),
                            "Test Task",
@@ -50,25 +51,39 @@ class TaskResourceSpecTest extends SpecificationWithJUnit {
                                              "dashboard.tiers.last._id",
                                              "dashboard.workflows.last._id")
 
-  "Create task" in {    
+  "Create task" in {
+    val boardId = boardResource.createBoard("test-board")
+    sleep
     taskResource.createTask(boardId,
                             null,
                             Serialization.write(testTask).getBytes) must notBeNull
   }
 
   "Update task" in {
+    val boardId = boardResource.createBoard("test-board")
+    sleep
     val taskId = taskResource.createTask(boardId,
                                          null,
                                          Serialization.write(testTask).getBytes)
+    sleep
     taskResource.updateTask(null,
                             Serialization.write(updatedTask(taskId)).getBytes) must notBeNull
   }
 
   "Delete task" in {
+    val boardId = boardResource.createBoard("test-board")
+    sleep
     val taskId = taskResource.createTask(boardId,
                                          null,
                                          Serialization.write(testTask).getBytes)
+    sleep
     taskResource.deleteTask(taskId)
+  }
+
+  doAfterSpec{
+    TaskUpdateFact.drop
+    DashboardModel.drop
+    ChartPointGroup.drop
   }
 
 }

@@ -79,7 +79,10 @@ function initTasks(tasksArray, board, from, to){
         var task = tasksArray[i]
         board.addTask(task._id, task.workflowId, task.tierId,
             task.description, task.assigneeId, task.estimation,
-            task.priority, task.offsetLeft, task.offsetTop)        
+            task.priority, task.offsetLeft, task.offsetTop)   
+board.addTaskOnUI(task._id, task.workflowId, task.tierId,
+            task.description, task.assigneeId, task.estimation,
+            task.priority, task.offsetLeft, task.offsetTop)     
     }
 }
 

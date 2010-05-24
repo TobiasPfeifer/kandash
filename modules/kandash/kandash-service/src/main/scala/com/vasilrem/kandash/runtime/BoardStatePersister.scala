@@ -6,8 +6,9 @@
 package com.vasilrem.kandash.runtime
 
 import com.vasilrem.kandash.mongo._
-import scala.actors.{Actor,Exit,TIMEOUT}
-import Actor._
+import scala.actors.Actor._
+import scala.actors.Exit
+import scala.actors.TIMEOUT
 
 /**
  * Persists state (count of tasks per tier in project) of all boards in the

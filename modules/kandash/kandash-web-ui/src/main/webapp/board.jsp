@@ -1,7 +1,7 @@
-<%-- 
+п»ї<%-- 
     Document   : board
     Created on : 10.04.2010, 1:21:05
-    Author     : Администратор
+    Author     : 
 --%>
 
 <%@page contentType="text/html" pageEncoding="windows-1251"%>
@@ -48,6 +48,7 @@
         <script type="text/javascript" src="js/com/vasilrem/kandash/board/TaskForm.js"></script>
         <script type="text/javascript" src="js/com/vasilrem/kandash/board/Task.js"></script>
         <script type="text/javascript" src="js/com/vasilrem/kandash/board/Board.js"></script>
+        <script type="text/javascript" src="js/com/vasilrem/kandash/comet-support.js"></script>
 
         <script type="text/javascript" src="js/dashboard.js"></script>
 

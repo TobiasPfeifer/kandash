@@ -487,3 +487,23 @@ removeTasksFromContainer = function(containerId, collectionType) {
             db.dashboardmodels.save(board);
         })
 }
+
+getAllBoards = function(){
+    var dashboards = []
+    db.dashboardmodels.find({}, {
+        name: 1
+    }).forEach(function(board){
+        dashboards[dashboards.length] = board
+    })
+    return {
+        list: dashboards
+    }
+}
+
+getBoardIdByCollection = function(collectionName, collectionId){
+    var query = new Object()
+    query[collectionName + '._id'] = ObjectId(collectionId)
+    return db.dashboardmodels.findOne(query, {
+        name: 1
+    })
+}

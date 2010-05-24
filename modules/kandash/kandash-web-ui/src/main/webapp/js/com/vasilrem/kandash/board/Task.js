@@ -26,7 +26,7 @@ com.vasilrem.kandash.board.Task = Ext.extend(Ext.Panel, {
                     if(btn == 'yes'){
                         var cell = task.ownerCt
                         cell.remove(task)
-                        DELETE(RESOURCES + RS_TASK + '/' + task.id)
+                        DELETE(RESOURCES + RS_TASK + '/' + getBoard().id + '/' + task.id)
                     }
                 },
                 animEl: 'elId'
@@ -82,6 +82,17 @@ com.vasilrem.kandash.board.Task = Ext.extend(Ext.Panel, {
         this.priority = priority
     },
 
+    changeTier: function(cellId){
+        var tierId = Ext.getCmp(cellId).getTierId()
+        if(getBoard().getTasksPerTier(tierId).length >=
+            getBoard().boardGrid[Ext.getCmp(cellId).ownerCt.id][tierId].getWipLimit()){
+            Ext.Msg.alert('Task cannot be assigned to the tier!', 'WiP limit is reached!');
+            return
+        }
+        Ext.getCmp(cellId).add(this)
+        Ext.getCmp(cellId).doLayout()
+    },
+
     /**
      * Converts task to lightweight JSON object
      */
@@ -130,15 +141,7 @@ com.vasilrem.kandash.board.Task.DropZone = Ext.extend(Ext.dd.DDProxy, {
             var el = Ext.get(this.getEl());
             var task = Ext.getCmp(el.id)
             if(this.lastTarget) {
-                
-                var tierId = Ext.getCmp(this.lastTarget.id).getTierId()
-                if(getBoard().getTasksPerTier(tierId).length >=
-                    getBoard().boardGrid[Ext.getCmp(this.lastTarget.id).ownerCt.id][tierId].getWipLimit()){
-                    Ext.Msg.alert('Task cannot be assigned to the tier!', 'WiP limit is reached!');
-                    return
-                }
-                Ext.getCmp(this.lastTarget.id).add(task)
-                Ext.getCmp(this.lastTarget.id).doLayout()
+                task.changeTier(this.lastTarget.id)
             }
             el.applyStyles({
                 position:'absolute'
@@ -153,7 +156,7 @@ com.vasilrem.kandash.board.Task.DropZone = Ext.extend(Ext.dd.DDProxy, {
             }
             el.setXY(dragEl.getXY());
             el.setWidth(dragEl.getWidth());
-            PUT(RESOURCES + RS_TASK, task.toJSON())
+            PUT(RESOURCES + RS_TASK + '/' + getBoard().id, task.toJSON())
             this.lastTarget = null;
         }else{
             this.invalidDrop = false

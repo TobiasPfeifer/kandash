@@ -8,6 +8,7 @@ package com.vasilrem.kandash.resources
 import javax.ws.rs._
 import javax.ws.rs.core._
 import com.vasilrem.kandash.service._
+import com.vasilrem.kandash.actors._
 import com.vasilrem.kandash.model._
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -18,9 +19,9 @@ import net.liftweb.json.Serialization.{read, write, formats}
  * REST-endpoint to work with projects
  */
 @Path("/project")
-class ProjectResource(kandashService: KandashService) {
+class ProjectResource {
 
-  def this() = this(KandashServiceInstance)
+  val kandashService = KandashActors.kandashPersistenceActor
 
   val log = LogFactory.getLog(this.getClass);
 
@@ -40,8 +41,9 @@ class ProjectResource(kandashService: KandashService) {
   def createProject(@PathParam("boardId") boardId:String,
                     @Context headers: HttpHeaders, in: Array[Byte]): String = {
     log.info("Create new project")
-    kandashService.add[Workflow](boardId,
-                                         Serialization.read[Workflow](new String(in)))
+    (kandashService !! Add[Workflow](boardId,
+                                     Serialization.read[Workflow](new String(in))))
+    .get.asInstanceOf[String]
   }
 
   /**
@@ -53,8 +55,8 @@ class ProjectResource(kandashService: KandashService) {
   @PUT 
   def updateProject(@Context headers: HttpHeaders, in: Array[Byte]): String = {
     log.info("Update project")
-    kandashService.update[Workflow](
-      Serialization.read[Workflow](new String(in)))
+    (kandashService !! Update[Workflow](
+        Serialization.read[Workflow](new String(in)))).get.asInstanceOf[String]
   }
 
   /**
@@ -64,7 +66,7 @@ class ProjectResource(kandashService: KandashService) {
   @DELETE @Path("/{projectId}")
   def deleteProject(@PathParam("projectId") projectId:String) = {
     log.info("Delete project " + projectId)
-    kandashService.removeProject(projectId)
+    kandashService ! RemoveProject(projectId)
   }
 
 }

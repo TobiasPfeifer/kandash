@@ -12,4 +12,11 @@
                 <exec.executable>java</exec.executable>
             </properties>
         </action>
+        <action>
+            <actionName>CUSTOM-install offline</actionName>
+            <displayName>install offline</displayName>
+            <goals>
+                <goal>install</goal>
+            </goals>
+        </action>
     </actions>

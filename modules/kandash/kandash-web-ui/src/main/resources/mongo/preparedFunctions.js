@@ -462,9 +462,6 @@ calculateLeadTime = function(workflowId, date){
     var doneCount = count.doneCount
     var leadDate = convertToJSDate(date)
     while(count.notdoneCount > doneCount){
-        print('notdoneCount = ' + count.notdoneCount)
-        print('doneCount = ' + doneCount)
-        print('leadDate.getDate() = ' + leadDate.getDate())
         leadDate.setDate(leadDate.getDate() - 1)
         count = getTaskCount(workflowId, toISO(leadDate))
     }
@@ -489,4 +486,24 @@ removeTasksFromContainer = function(containerId, collectionType) {
             }
             db.dashboardmodels.save(board);
         })
+}
+
+getAllBoards = function(){
+    var dashboards = []
+    db.dashboardmodels.find({}, {
+        name: 1
+    }).forEach(function(board){
+        dashboards[dashboards.length] = board
+    })
+    return {
+        list: dashboards
+    }
+}
+
+getBoardIdByCollection = function(collectionName, collectionId){
+    var query = new Object()
+    query[collectionName + '._id'] = ObjectId(collectionId)
+    return db.dashboardmodels.findOne(query, {
+        name: 1
+    })
 }

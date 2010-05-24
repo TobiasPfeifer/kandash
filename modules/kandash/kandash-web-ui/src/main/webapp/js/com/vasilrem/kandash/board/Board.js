@@ -166,7 +166,7 @@ com.vasilrem.kandash.board.Board = Ext.extend(Ext.Panel, {
  * @return task identifier
  */
     addTask: function(taskId, projectId, tierId, taskName, assignedTo, estimation,
-        priority, offsetLeft, offsetTop, doRefresh){
+        priority, offsetLeft, offsetTop){
         if(!taskId){
             taskId = POST(RESOURCES + RS_TASK + '/' + getBoard().id, {
                 'assigneeId': assignedTo, // TO CHANGE: assignee name should be replaced with assignee ID
@@ -179,6 +179,10 @@ com.vasilrem.kandash.board.Board = Ext.extend(Ext.Panel, {
                 'workflowId': projectId
             })
         }
+},
+
+    addTaskOnUI: function(taskId, projectId, tierId, taskName, assignedTo, estimation,
+        priority, offsetLeft, offsetTop, doRefresh){
         var boardCell = this.boardGrid[projectId][tierId]
         boardCell.expand(false)
         var task = {

@@ -5,8 +5,6 @@
 
 package com.vasilrem.kandash.runtime
 
-import scala.actors.{Actor,Exit,TIMEOUT}
-import Actor._
 import com.vasilrem.kandash.mongo._
 
 object SchedulingTest {

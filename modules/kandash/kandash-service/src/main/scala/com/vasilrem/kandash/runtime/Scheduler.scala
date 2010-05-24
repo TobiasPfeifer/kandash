@@ -4,14 +4,14 @@
  */
 package com.vasilrem.kandash.runtime
 
-import scala.actors.{Actor,Exit,TIMEOUT}
+import scala.actors.{Exit,TIMEOUT}
+import scala.actors.Actor._
 
 /**
  * Simple scheduler that touches the actor over a specified amount of time
  */
 object Scheduler {
   def schedule(f: => Unit, time: Long) = new AnyRef {
-    import Actor._
     private val a = actor { loop }
     private def loop: Unit = reactWithin(time) {
       case TIMEOUT => f; loop

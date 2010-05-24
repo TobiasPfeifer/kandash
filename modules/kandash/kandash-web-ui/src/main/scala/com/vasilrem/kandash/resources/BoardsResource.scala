@@ -8,6 +8,7 @@ package com.vasilrem.kandash.resources
 import javax.ws.rs._
 import javax.ws.rs.core._
 import com.vasilrem.kandash.service._
+import com.vasilrem.kandash.actors.KandashPersistenceUtil
 import com.vasilrem.kandash.model._
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -18,9 +19,7 @@ import net.liftweb.json.Serialization.{read, write, formats}
  * REST-endpoint to work with boards
  */
 @Path("/boards")
-class BoardsResource(kandashService: KandashService) {
-
-  def this() = this(KandashServiceInstance)
+class BoardsResource extends KandashPersistenceUtil{
 
   val log = LogFactory.getLog(this.getClass);
 
@@ -37,7 +36,7 @@ class BoardsResource(kandashService: KandashService) {
   @Produces(Array("text/json"))
   def getBoards(): String = {
     log.info("Getting list of boards")
-    Serialization.write(kandashService.getDashboards)
+    Serialization.write(getDashboards)
   }
 
 }

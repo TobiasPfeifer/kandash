@@ -7,10 +7,11 @@ package com.vasilrem.kandash.resources
 
 import org.specs._
 import java.util.Date
-import com.eltimn.scamongo._;
+import com.vasilrem.kandash.actors._
 import com.vasilrem.kandash.model._;
 import net.liftweb.json.JsonDSL._
 import com.mongodb.ObjectId
+import com.vasilrem.kandash.runtime.TestBoot
 import com.vasilrem.kandash.service._
 import java.io._
 import java.util.Calendar
@@ -19,9 +20,13 @@ import net.liftweb.json.Serialization.{read, write, formats}
 import net.liftweb.json._
 import com.vasilrem.kandash.resources._
 
-class ChartModelResourceSpecTest extends SpecificationWithJUnit {
+class ChartModelResourceSpecTest extends SpecificationWithJUnit with KandashPersistenceUtil{
 
-  val chartModelResource = new ChartModelResource(KandashServiceTestInstance, ReportingServiceTestInstance)
+  TestBoot
+  val chartModelResource = new ChartModelResource
+  val kandashService = KandashActors.kandashPersistenceActor
+
+  def sleep = Thread.sleep(500)
 
   /**
    * Type hint for serialization/deserialization
@@ -29,16 +34,14 @@ class ChartModelResourceSpecTest extends SpecificationWithJUnit {
   implicit val formats = Serialization.formats(NoTypeHints)
 
   doBeforeSpec{
-    TaskUpdateFact.drop
-    DashboardModel.drop
-    ChartPointGroup.drop
     val cal = Calendar.getInstance
     cal.set(Calendar.YEAR, 2010)
     cal.set(Calendar.HOUR_OF_DAY, 0)
     cal.set(Calendar.MINUTE, 0)
     cal.set(Calendar.SECOND, 0)
-    val boardId = KandashServiceTestInstance.createNewDashboard("chart")
-    val board = KandashServiceTestInstance.getDashboardById(boardId)
+    val boardId = (kandashService !! CreateNewDashboard("chart")).get.asInstanceOf[String]
+    sleep
+    val board = getDashboardById(boardId).get
     val projectId = board.workflows.first._id
     val random = new java.util.Random
     var backlogCount = 0
@@ -61,11 +64,17 @@ class ChartModelResourceSpecTest extends SpecificationWithJUnit {
 
   "Monthly chart model for the specified data" should {
     "contain more than one group of chart poins" in{
-      val board = KandashServiceTestInstance.getDashboardByName("chart")
+      val board = getDashboardByName("chart").get
       val chartModel = Serialization.read[ChartModel](chartModelResource.getWorkflowChartModel(board._id, "month", null))
       print("Chart model: " + chartModel)
       chartModel.chartGroups.length must beGreaterThan(0)
     }
+  }
+
+  doAfterSpec{
+    TaskUpdateFact.drop
+    DashboardModel.drop
+    ChartPointGroup.drop
   }
 
 }

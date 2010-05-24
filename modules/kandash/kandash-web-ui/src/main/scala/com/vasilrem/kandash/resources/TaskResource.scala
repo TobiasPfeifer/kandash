@@ -8,26 +8,39 @@ package com.vasilrem.kandash.resources
 import javax.ws.rs._
 import javax.ws.rs.core._
 import com.vasilrem.kandash.service._
+import com.vasilrem.kandash.actors._
 import com.vasilrem.kandash.model._
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import net.liftweb.json._
 import net.liftweb.json.Serialization.{read, write, formats}
+import org.atmosphere.annotation.{Broadcast, Suspend,Cluster}
+import org.atmosphere.util.XSSHtmlFilter
+import org.atmosphere.cpr.{Broadcaster, BroadcastFilter}
+import org.atmosphere.jersey.Broadcastable
+import se.scalablesolutions.akka.actor.Actor
+import se.scalablesolutions.akka.util.Logging
 
 /**
  * REST-endpoint to work with tasks
  */
 @Path("/task")
-class TaskResource(kandashService: KandashService) {
+class TaskResource extends Actor with Logging{
 
-  def this() = this(KandashServiceInstance)
+  this.start
 
-  val log = LogFactory.getLog(this.getClass);
+  val kandashService = KandashActors.kandashPersistenceActor
 
   /**
    * Type hint for serialization/deserialization
    */
   implicit val formats = Serialization.formats(NoTypeHints)
+
+  @Suspend(resumeOnBroadcast = true)
+  @GET @Path("/{boardId}")
+  @Produces(Array("text/json"))
+  def subscribe(@PathParam("boardId") boardId: Broadcaster): Broadcastable =
+    new Broadcastable("", boardId)
 
   /**
    * Adds new task to the board
@@ -36,12 +49,16 @@ class TaskResource(kandashService: KandashService) {
    * @val in HTTP input stream conveterted to array
    * @return task identifier
    */
+  @Broadcast(resumeOnBroadcast = true)
+  @Produces(Array("text/json"))
   @POST @Path("/{boardId}") 
-  def createTask(@PathParam("boardId") boardId:String,
-                 @Context headers: HttpHeaders, in: Array[Byte]): String = {
+  def createTask(@PathParam("boardId") boardId:Broadcaster,
+                 @Context headers: HttpHeaders, in: Array[Byte]): Broadcastable  = {
     log.info("Create new task")
-    kandashService.addTask(boardId,
-                           Serialization.read[Task](new String(in)))
+    val task = Serialization.read[Task](new String(in))
+    val taskId = (kandashService !! AddTask(boardId.getID, task))
+    .get.asInstanceOf[String]
+    new Broadcastable(Serialization.write[Task](task.copy(_id = taskId)), boardId)
   }
 
   /**
@@ -49,21 +66,38 @@ class TaskResource(kandashService: KandashService) {
    * @val headers HTTP headers
    * @val in HTTP input stream conveterted to array
    */
-  @PUT 
-  def updateTask(@Context headers: HttpHeaders, in: Array[Byte]) = {
-    log.info("Update task")
-    kandashService.updateTask(
-      Serialization.read[Task](new String(in)))
-  }
-
+  @Broadcast(resumeOnBroadcast = true)
+  @Produces(Array("text/json"))
+  @PUT @Path("/{boardId}")
+  def updateTask(@PathParam("boardId") boardId: Broadcaster,
+                 @Context headers: HttpHeaders,
+                 in: Array[Byte]): Broadcastable =
+                   new Broadcastable((self !! UpdateResource(in)).get.asInstanceOf[String], boardId)
+ 
   /**
    * Removes task
    * @val taskId identifier of the task that should be removed
    */
-  @DELETE @Path("/{taskId}")
-  def deleteTask(@PathParam("taskId") taskId:String) = {
+  @Broadcast(resumeOnBroadcast = true)
+  @Produces(Array("text/json"))
+  @DELETE @Path("/{boardId}/{taskId}")
+  def deleteTask(@PathParam("boardId") boardId: Broadcaster,
+                 @PathParam("taskId") taskId:String): Broadcastable = {
     log.info("Delete task " + taskId)
-    kandashService.remove(taskId, Task.collectionName)
+    kandashService ! Remove(taskId, Task.collectionName)
+    new Broadcastable("{remove:'" + taskId + "'}", boardId)
+  }
+
+  case class UpdateResource(in: Array[Byte])
+
+  def receive = {
+    case UpdateResource(in: Array[Byte]) =>
+      reply(new String(in))
+      log.info("Update task")
+      val task = Serialization.read[Task](new String(in))
+      kandashService ! UpdateTask(task)
+
+    case _ =>
   }
 
 }

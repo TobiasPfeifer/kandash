@@ -110,6 +110,7 @@ Ext.onReady(function(){
     });
 
     initBoard(boardFromRequest)
+    startMonitoring(boardFromRequest)
 
 });
 

@@ -6,12 +6,11 @@
 package com.vasilrem.kandash.model
 
 import com.vasilrem.kandash.model._
-import com.eltimn.scamongo._
+import net.liftweb.mongodb._
 import com.vasilrem.kandash.model._;
 import net.liftweb.json.JsonDSL._
 import net.liftweb.json.JsonAST._
 import net.liftweb.json._
-import com.mongodb.ObjectId
 
 /**
  * Build Lift-JSON object, that can be passed to $push and other Mongo functions
@@ -24,8 +23,8 @@ trait JObjectBuilder {
 
   /**
    * Builds List-JSON from a plain (non-tree) document
-   * @val documentId identifier of the document
-   * @val document document to be converted into List-JSON
+   * @param documentId identifier of the document
+   * @param document document to be converted into List-JSON
    */
   def buildQuery(documentId: String, document: AnyRef): JObject = {
     val query:JObject = ("_id" -> documentId)
@@ -44,7 +43,7 @@ trait JObjectBuilder {
 
   /**
    * Converts scala-typed valued to JValues
-   * @val value scala-typed valued
+   * @param value scala-typed valued
    */
   def convertValueToJValue(value: Any):JValue = {
     value match {
