@@ -5,9 +5,14 @@
 
 package com.vasilrem.kandash.resources.config
 
+import com.vasilrem.kandash.resources.TaskResource
+import com.vasilrem.kandash.runtime._
 import com.vasilrem.kandash.service._
 import com.vasilrem.kandash.mongo._
 import com.vasilrem.kandash.actors._
+import se.scalablesolutions.akka.actor.Actor
+import se.scalablesolutions.akka.actor.Actor._
+import se.scalablesolutions.akka.actor.ActorRegistry
 import se.scalablesolutions.akka.actor.SupervisorFactory
 import se.scalablesolutions.akka.config.ScalaConfig._
 import se.scalablesolutions.akka.stm.Transaction
@@ -32,8 +37,9 @@ class Boot extends Logging {
 
   log.info("Initializing test supervisor...")
   val factory = SupervisorFactory(
-    SupervisorConfig(
+    SupervisorConfig(      
       RestartStrategy(AllForOne, 3, 1000, List(classOf[Exception])),
+      Supervise(actorOf(new BoardStateTracker(20 * 1000)), LifeCycle(Permanent)) ::
       new LoadBalancedPool(300, {new KandashPersistence})
       .createListOfSupervizedActors :::
       new LoadBalancedPool(300, {new UsageTracking})
@@ -47,4 +53,7 @@ class Boot extends Logging {
 
   log.info("Test supervizor started.")
 
+  ActorRegistry.actorsFor[BoardStateTracker](classOf[BoardStateTracker]).head ! TrackBoardsState
+
+  log.info("Boards tracking started.")
 }

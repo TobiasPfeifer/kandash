@@ -99,7 +99,19 @@
         </dependency>
         <dependency>
             <groupId>se.scalablesolutions.akka</groupId>
-            <artifactId>akka-http_2.8.0.Beta1</artifactId>
+            <artifactId>akka-kernel_2.8.0.Beta1</artifactId>
+            <version>0.9</version>
+            <exclusions>
+                <exclusion>
+                    <artifactId>akka-persistence_2.8.0.Beta1</artifactId>
+                    <groupId>se.scalablesolutions.akka</groupId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <artifactId>akka-persistence_2.8.0.Beta1</artifactId>
+            <groupId>se.scalablesolutions.akka</groupId>
+            <type>pom</type>
             <version>0.9</version>
         </dependency>
     </dependencies>
@@ -170,6 +182,8 @@
     </reporting>
     <name>Kandash WebUI</name>
 </project>
+
+
 
 
 

@@ -19,17 +19,16 @@ import org.atmosphere.util.XSSHtmlFilter
 import org.atmosphere.cpr.{Broadcaster, BroadcastFilter}
 import org.atmosphere.jersey.Broadcastable
 import se.scalablesolutions.akka.actor.Actor
+import se.scalablesolutions.akka.actor.Actor._
 import se.scalablesolutions.akka.util.Logging
 
 /**
  * REST-endpoint to work with tasks
  */
 @Path("/task")
-class TaskResource extends Actor with Logging{
+class TaskResource extends Logging{
 
-  this.start
-
-  val kandashService = KandashActors.kandashPersistenceActor
+  lazy val kandashService = KandashActors.kandashPersistenceActor
 
   /**
    * Type hint for serialization/deserialization
@@ -71,8 +70,14 @@ class TaskResource extends Actor with Logging{
   @PUT @Path("/{boardId}")
   def updateTask(@PathParam("boardId") boardId: Broadcaster,
                  @Context headers: HttpHeaders,
-                 in: Array[Byte]): Broadcastable =
-                   new Broadcastable((self !! UpdateResource(in)).get.asInstanceOf[String], boardId)
+                 in: Array[Byte]): Broadcastable = {
+    spawn {
+      log.info("Update task")
+      val task = Serialization.read[Task](new String(in))
+      kandashService ! UpdateTask(task)
+    }
+    new Broadcastable(new String(in), boardId)
+  }
  
   /**
    * Removes task
@@ -86,18 +91,6 @@ class TaskResource extends Actor with Logging{
     log.info("Delete task " + taskId)
     kandashService ! Remove(taskId, Task.collectionName)
     new Broadcastable("{remove:'" + taskId + "'}", boardId)
-  }
-
-  case class UpdateResource(in: Array[Byte])
-
-  def receive = {
-    case UpdateResource(in: Array[Byte]) =>
-      reply(new String(in))
-      log.info("Update task")
-      val task = Serialization.read[Task](new String(in))
-      kandashService ! UpdateTask(task)
-
-    case _ =>
   }
 
 }

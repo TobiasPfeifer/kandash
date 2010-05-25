@@ -7,6 +7,7 @@ package com.vasilrem.kandash.resources
 
 import org.specs._
 import java.util.Date
+import com.vasilrem.kandash.actors.KandashPersistenceUtil
 import com.vasilrem.kandash.model._;
 import net.liftweb.json.JsonDSL._
 import com.mongodb.ObjectId
@@ -17,7 +18,7 @@ import net.liftweb.json._
 import net.liftweb.json.Serialization.{read, write, formats}
 import org.atmosphere.cpr._
 
-class TaskResourceSpecTest extends SpecificationWithJUnit {
+class TaskResourceSpecTest extends SpecificationWithJUnit with KandashPersistenceUtil{
 
   TestBoot
   /**
@@ -27,56 +28,61 @@ class TaskResourceSpecTest extends SpecificationWithJUnit {
 
   val boardResource = new BoardResource
   val taskResource = new TaskResource
+
   def sleep = Thread.sleep(500)
   
-  val testTask =  new Task(null,
-                           new Some("unknown"),
-                           "Test Task",
-                           new Some(5),
-                           new Some("unknown"),
-                           50,
-                           50,
-                           new Some(100),
-                           1,
-                           "dashboard.tiers.last._id",
-                           "dashboard.workflows.last._id")
-  def updatedTask(taskId: String) = new Task(taskId,
-                                             new Some("unknown"),
-                                             "Test Task Updated",
-                                             new Some(5),
-                                             new Some("unknown"),
-                                             50,
-                                             50,
-                                             new Some(100),
-                                             1,
-                                             "dashboard.tiers.last._id",
-                                             "dashboard.workflows.last._id")
+  def testTask(tierId: String, projectId: String) =  new Task(null,
+                                                              new Some("unknown"),
+                                                              "Test Task",
+                                                              new Some(5),
+                                                              new Some("unknown"),
+                                                              50,
+                                                              50,
+                                                              new Some(100),
+                                                              1,
+                                                              tierId,
+                                                              projectId)
+
+  def updatedTask(taskId: String, tierId: String, projectId: String) = new Task(taskId,
+                                                                                new Some("unknown"),
+                                                                                "Test Task Updated",
+                                                                                new Some(5),
+                                                                                new Some("unknown"),
+                                                                                50,
+                                                                                50,
+                                                                                new Some(100),
+                                                                                1,
+                                                                                tierId,
+                                                                                projectId)
 
   "Create task" in {
-    val boardId = boardResource.createBoard("test-board")
+    val boardId = boardResource.createBoard("test-board")    
     sleep
+    val board = getDashboardById(boardId).get
     taskResource.createTask(new DefaultBroadcaster(boardId),
                             null,
-                            Serialization.write(testTask).getBytes) must notBeNull
+                            Serialization.write(testTask(board.tiers.last._id, board.workflows.last._id)).getBytes) must notBeNull
   }
 
   "Update task" in {
     val boardId = boardResource.createBoard("test-board")
     sleep
-    val taskId = taskResource.createTask(new DefaultBroadcaster(boardId),
-                                         null,
-                                         Serialization.write(testTask).getBytes).message.toString
+    val board = getDashboardById(boardId).get
+    val taskId = Serialization.read[Task](taskResource.createTask(new DefaultBroadcaster(boardId),
+                                                                  null,
+                                                                  Serialization.write(testTask(board.tiers.last._id, board.workflows.last._id)).getBytes).message.toString)._id
     sleep
     taskResource.updateTask(new DefaultBroadcaster(boardId), null,
-                            Serialization.write(updatedTask(taskId)).getBytes) must notBeNull
+                            Serialization.write(updatedTask(taskId, board.tiers.last._id, board.workflows.last._id)).getBytes) must notBeNull
   }
 
   "Delete task" in {
     val boardId = boardResource.createBoard("test-board")
     sleep
-    val taskId = taskResource.createTask(new DefaultBroadcaster(boardId),
-                                         null,
-                                         Serialization.write(testTask).getBytes).message.toString
+    val board = getDashboardById(boardId).get
+    val taskId = Serialization.read[Task](taskResource.createTask(new DefaultBroadcaster(boardId),
+                                                                  null,
+                                                                  Serialization.write(testTask(board.tiers.last._id, board.workflows.last._id)).getBytes).message.toString)._id
     sleep
     taskResource.deleteTask(new DefaultBroadcaster(boardId), taskId)
   }
