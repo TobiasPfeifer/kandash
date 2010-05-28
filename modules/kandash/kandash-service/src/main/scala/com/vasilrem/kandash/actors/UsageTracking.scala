@@ -19,6 +19,7 @@ sealed trait UsageEvent
 
 case class TrackTaskUpdate(boardId: String, task: Task) extends UsageEvent
 case class CreateFact(task: Task) extends UsageEvent
+case class DeleteFactsPerTask(taskId: String) extends UsageEvent
 
 class UsageTracking extends Actor {
 
@@ -30,8 +31,11 @@ class UsageTracking extends Actor {
       val dashboard = DashboardModel.find(("tasks._id" -> task._id)).get
       val oldTask = dashboard.tasks.find{oldTask => oldTask._id == task._id}.get
       val tierIsChanged: Boolean = oldTask.tierId != task.tierId
-      //reply(tierIsChanged)
+      reply(tierIsChanged)
       if(tierIsChanged) TaskUpdateFact(ObjectId.get.toString, dashboard._id, task, new java.util.Date).save
+
+    case DeleteFactsPerTask(taskId) =>
+      TaskUpdateFact.delete(("task._id" -> taskId))
 
     case x: Any => log.error("Unprocessable message " + x + " at UsageTracking")
   }

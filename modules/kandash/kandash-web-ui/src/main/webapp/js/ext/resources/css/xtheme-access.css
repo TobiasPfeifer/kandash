@@ -1934,6 +1934,14 @@ body.x-body-masked .x-window-plain .x-window-mc {
     height: 29px !important;
 }
 
+.product-akka-icon {
+    background-image: url('../images/kandash/akka.JPG') !important;
+    background-repeat: no-repeat !important;
+    background-position: top center !important;
+    width: 100px !important;
+    height: 55px !important;
+}
+
 .product-book-icon {
     background-image: url('../images/kandash/scrumandkanban.jpg') !important;
     background-repeat: no-repeat !important;

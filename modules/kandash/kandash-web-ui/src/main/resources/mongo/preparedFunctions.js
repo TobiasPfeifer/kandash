@@ -196,10 +196,6 @@ updateTiersOrder = function(boardId, startingFromOrder, incrementor) {
 getWorkflowChartPointGroup = function(projectIds, date, tierOrders){
     var tomorrow = new Date(date)
     tomorrow.setDate(tomorrow.getDate() + 1)
-    print('looking for chartPointGroup ')
-    print('workflowId: ' + projectIds)
-    print('tomorrow: ' + toISO(tomorrow))
-    print('date: ' + toISO(date))
     var chartPointGroup = db.chartpointgroups.findOne({
         "workflowId" : {
             $in : projectIds
@@ -209,7 +205,6 @@ getWorkflowChartPointGroup = function(projectIds, date, tierOrders){
             $lt:toISO(tomorrow)
         }
     })
-    print('chartPointGroup: ' + chartPointGroup)
     if(chartPointGroup){
         chartPointGroup.tiers.sort(function(tierA, tierB){
             if(tierOrders[tierA.tierId] < tierOrders[tierB.tierId]) return -1
@@ -384,7 +379,6 @@ trackBoardsState = function(){
                             count: 0
                         }
                     }).length
-                    print('search in facts for ' + doneTier._id + ', count ' + count)
                 }else{
                     count = board.tasks.filter(function(task) {
                         return task.tierId.toString() == tier._id.toString()

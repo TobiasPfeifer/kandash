@@ -59,7 +59,7 @@ class TierResourceSpecTest extends SpecificationWithJUnit {
                                          null,
                                          Serialization.write(testTier).getBytes)   
     println("Deleting tier " + tierId + " from " + boardResource.getBoard(boardId))
-    sleep
+    //sleep
     tierResource.deleteTier(tierId)
   }
 

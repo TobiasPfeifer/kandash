@@ -5,12 +5,16 @@ com.vasilrem.kandash.board.Project = Ext.extend(Ext.Panel, {
     layout:'anchor',
     bodyStyle:'border:none',
     tools: [{
+        id: 'minus',
+        qtip: 'Collapse other projects',
+        handler: function(event, toolEl, project){
+            project.ownerCt.collapseAllProjects(project.id)
+        }
+    },{
         id: 'minimize',
         qtip: 'Minimize to toolbar',
         handler: function(event, toolEl, project){
-            project.hide()
-            project.ownerCt.resizeProjectColumns()
-            project.addToProjectBar()
+            project.minimizeToToolbar()
         }
     },{
         id: 'gear',
@@ -62,6 +66,17 @@ com.vasilrem.kandash.board.Project = Ext.extend(Ext.Panel, {
             });
         }
     }],
+
+    /**
+     * Minimizes project to the toolbar
+     * @param isRender if it's set ot true, change won't be rendered
+     */
+    minimizeToToolbar: function(skipRender){
+        this.hide()
+        if(skipRender)
+            this.ownerCt.resizeProjectColumns()
+        this.addToProjectBar()
+    },
 
     /**
      * Inserts tier to the project pane at specified position

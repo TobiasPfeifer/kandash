@@ -20,7 +20,7 @@ var dialogTaskForm = new Ext.form.FormPanel({
         allowBlank: true,
         emptyText:'Choose the project...',
         selectOnFocus:true,
-        anchor: '100%'
+        anchor: '95%'
     }),{
         fieldLabel: 'Summary',
         name: 'description',
@@ -51,7 +51,7 @@ var dialogTaskForm = new Ext.form.FormPanel({
         triggerAction: 'all',
         emptyText:'Specify task priority...',
         selectOnFocus:true,
-        anchor: '100%'
+        anchor: '95%'
     })],
 
     getProject: function(){

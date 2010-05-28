@@ -28,6 +28,7 @@ case class Update[A](document: MongoDocument[A]) extends PersistenceEvent
 case class UpdateTask(task:Task) extends PersistenceEvent
 case class UpdateTier(tier: Tier) extends PersistenceEvent
 case class Remove(documentId: String, collectionName: String) extends PersistenceEvent
+case class RemoveTask(taskId: String) extends PersistenceEvent
 case class RemoveTier(tierId: String) extends PersistenceEvent
 case class RemoveProject(projectId: String) extends PersistenceEvent
 case class RemoveDashboard(boardId: String) extends PersistenceEvent
@@ -115,12 +116,13 @@ class KandashPersistence extends Actor with JObjectBuilder with KandashPersisten
    * @val boardId identifier of the board the element will be added to
    * @val document element to be added
    */
-  private def add[A](boardId: String, document: MongoDocument[A]) = {
+  private def add[A](boardId: String, document: MongoDocument[A]): String = {
     val documentId = ObjectId.get.toString
     reply_?(documentId)
     DashboardModel.update(("_id" -> boardId),
                           ("$push" -> (document.meta.collectionName -> buildQuery(documentId, document))
       ))
+    documentId
   }
 
   /**
@@ -174,8 +176,8 @@ class KandashPersistence extends Actor with JObjectBuilder with KandashPersisten
     case Add(boardId, document) => add(boardId, document)
 
     case AddTask(boardId, task) =>
-      add[Task](boardId, task)
-      usageTrackingActor ! TrackTaskUpdate(boardId, task)
+      val taskId = add[Task](boardId, task)
+      usageTrackingActor ! TrackTaskUpdate(boardId, task.copy(_id = taskId))
 
     case AddTier(boardId, tier) =>
       incTiersOrder(boardId, tier.order - 1)
@@ -184,7 +186,7 @@ class KandashPersistence extends Actor with JObjectBuilder with KandashPersisten
     case Update(document) => update(document)
 
     case UpdateTask(task) =>
-      usageTrackingActor ! CreateFact(task)
+      usageTrackingActor !! CreateFact(task)
       update[Task](task)
 
     case UpdateTier(tier: Tier) =>
@@ -192,6 +194,10 @@ class KandashPersistence extends Actor with JObjectBuilder with KandashPersisten
       update[Tier](tier)
       
     case Remove(documentId, collectionName) => remove(documentId, collectionName)
+
+    case RemoveTask(taskId) =>
+      remove(taskId, Task.collectionName)
+      usageTrackingActor ! DeleteFactsPerTask(taskId)
 
     case RemoveTier(tierId) =>
       decTiersOrder(tierId)

@@ -415,7 +415,7 @@ Ext.onReady(function(){
         var encodedQuery = Ext.encode(query).replace(/"ObjectId\(\'([a-z0-9]+)\'\)\"/gi, 'ObjectId(\'$1\')')
         var reportModel = Ext.decode(GET(RESOURCES + RS_REPORTMODEL
             + '/' + board._id
-            + '/' + encodedQuery))
+            + '/' + encodedQuery))        
         reportModel.taskHistoryEntries.forEach(function(entry, i){
             var task = entry.taskFact.task
             data[data.length] = [task._id,
@@ -424,7 +424,7 @@ Ext.onReady(function(){
             entry.tier.name,
             task.assigneeId,
             task.estimation,
-            Math.round(entry.daysActive),
+            Math.round(entry.daysActive*1000)/1000,
             entry.taskCreated.substring(0, 10),
             entry.taskFact.updateDate.substring(0, 10)]
         })

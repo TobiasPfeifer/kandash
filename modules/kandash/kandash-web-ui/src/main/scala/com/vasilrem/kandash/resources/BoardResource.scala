@@ -14,13 +14,14 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import net.liftweb.json._
 import net.liftweb.json.Serialization.{read, write, formats}
+import com.vasilrem.kandash.resources.config._
 
 /**
  * REST-endpoint to work with boards
  */
 @Path("/board")
 class BoardResource extends KandashPersistenceUtil{
-
+  
   val kandashService = KandashActors.kandashPersistenceActor
 
   val log = LogFactory.getLog(this.getClass)

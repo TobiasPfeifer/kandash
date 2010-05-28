@@ -6,26 +6,33 @@ Ext.onReady(function(){
         id:'viewport',
         layout:'border',
         items:[{
+            baseCls: 'x-plain',
+            bodyStyle:'border:none',
+            x: 600,
+            y: 150,
+            html:'<img src="./js/ext/resources/images/kandash/trash_empty.png"/>'
+        },{
             region: 'north',
             baseCls: 'x-plain',
             height: 100,
             minSize: 75,
             maxSize: 250,
-            layout: 'vbox',
+            layout: 'hbox',
             margins: '20 20 20 20',
             items:[{
                 baseCls: 'x-plain',
-                margins: '0 0 0 30',
-                cls: 'title',
-                html:'kandash'
+                margins: '8 0 0 0',
+                bodyStyle:'border:none',
+                html:'<img src="./js/ext/resources/images/kandash/trash_empty-small.png"/>'
             },{
                 baseCls: 'x-plain',
-                margins: '0 0 0 30',
-                cls: 'title-small',
-                html:'choose the right tool'
+                margins: '0 0 0 10',
+                cls: 'title',
+                html:'<p>kandash</p><p class="title-small">choose the right tool</p>'
             }]
         },{
             baseCls: 'x-plain',
+            items: [],
             region: 'center'
         },{
             region: 'south',
@@ -87,6 +94,17 @@ Ext.onReady(function(){
                     listeners : {
                         'click' : function() {
                             window.open('http://www.infoq.com/minibooks/kanban-scrum-minibook')
+                        }
+                    }
+                },{
+                    xtype: 'button',
+                    maxWidth: 100,
+                    height: 34,
+                    margins: '10 10 10 10',
+                    iconCls:'product-akka-icon',
+                    listeners : {
+                        'click' : function() {
+                            window.open('http://akkasource.org/')
                         }
                     }
                 }

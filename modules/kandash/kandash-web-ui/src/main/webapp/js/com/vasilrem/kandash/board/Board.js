@@ -124,6 +124,18 @@ com.vasilrem.kandash.board.Board = Ext.extend(Ext.Panel, {
     },
 
     /**
+     * Collapses all projects on the board
+     * @param projectId project with the specified ID won't be collapsed
+     */
+    collapseAllProjects: function(projectId){
+        this.items.items.forEach(function(project){
+            if(project.id != projectId)
+                project.minimizeToToolbar(true)
+        })
+        this.resizeProjectColumns()
+    },
+
+    /**
  * Adds a new tier to the tier cache (private method!)
  * @param tierId tier identifier (if null, new tier is created on backend)
  * @param name tier name
@@ -179,7 +191,7 @@ com.vasilrem.kandash.board.Board = Ext.extend(Ext.Panel, {
                 'workflowId': projectId
             })
         }
-},
+    },
 
     addTaskOnUI: function(taskId, projectId, tierId, taskName, assignedTo, estimation,
         priority, offsetLeft, offsetTop, doRefresh){

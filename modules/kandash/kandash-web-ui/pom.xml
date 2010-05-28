@@ -103,7 +103,19 @@
             <version>0.9</version>
             <exclusions>
                 <exclusion>
+                    <artifactId>akka-amqp_2.8.0.Beta1</artifactId>
+                    <groupId>se.scalablesolutions.akka</groupId>
+                </exclusion>
+                <exclusion>
                     <artifactId>akka-persistence_2.8.0.Beta1</artifactId>
+                    <groupId>se.scalablesolutions.akka</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>akka-camel_2.8.0.Beta1</artifactId>
+                    <groupId>se.scalablesolutions.akka</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>akka-cluster_2.8.0.Beta1</artifactId>
                     <groupId>se.scalablesolutions.akka</groupId>
                 </exclusion>
             </exclusions>
@@ -113,6 +125,12 @@
             <groupId>se.scalablesolutions.akka</groupId>
             <type>pom</type>
             <version>0.9</version>
+            <exclusions>
+                <exclusion>
+                    <artifactId>akka-persistence-redis_2.8.0.Beta1</artifactId>
+                    <groupId>se.scalablesolutions.akka</groupId>
+                </exclusion>
+            </exclusions>
         </dependency>
     </dependencies>
 

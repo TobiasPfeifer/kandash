@@ -28,7 +28,6 @@ var addTierForm = new Ext.form.FormPanel({
     }),{
         fieldLabel: 'Work-in-Progress',
         name: 'wiplimit',
-        allowBlank: false,
         anchor: '100%'
     }],
 
@@ -62,7 +61,7 @@ var addTierDialog = new Ext.Window({
         type: 'submit',
         handler: function(){
             var tierId
-            if(!addTierForm.isValid() || !parseInt(addTierForm.getWipLimit())){
+            if(!addTierForm.getForm().isValid()){
                 return
             }
             if(addTierDialog.isUpdate){                
@@ -104,7 +103,7 @@ showAddTierDialog = function(tier){
     }
     if(tier){
         for(var i = 0; i< tiers.length; i++){
-            if(i != tier.getTierOrder())
+            //if(i != tier.getTierOrder())
                 addTierForm.items.items[1].store.add(
                     new Ext.data.Record({
                         'tierPosition': i,
@@ -114,6 +113,7 @@ showAddTierDialog = function(tier){
         addTierForm.items.items[0].setValue(tier.getTierName())
         addTierForm.items.items[1].setValue(null)
         addTierForm.items.items[2].setValue(tier.wipLimit)
+        addTierDialog.setTitle('Update Tier')
         addTierDialog.isUpdate = tier
     }else{
         for(var i = 1; i< tiers.length; i++){
@@ -126,6 +126,7 @@ showAddTierDialog = function(tier){
         addTierForm.items.items[0].setValue('')
         addTierForm.items.items[1].setValue(null)
         addTierForm.items.items[2].setValue('')
+        addTierDialog.setTitle('Add Tier')
         addTierDialog.isUpdate = null
     }
     addTierDialog.show()

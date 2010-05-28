@@ -89,7 +89,7 @@ class TaskResource extends Logging{
   def deleteTask(@PathParam("boardId") boardId: Broadcaster,
                  @PathParam("taskId") taskId:String): Broadcastable = {
     log.info("Delete task " + taskId)
-    kandashService ! Remove(taskId, Task.collectionName)
+    kandashService ! RemoveTask(taskId)
     new Broadcastable("{remove:'" + taskId + "'}", boardId)
   }
 

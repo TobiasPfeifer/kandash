@@ -10,7 +10,7 @@
         </init-param>
     </servlet>
     <listener>
-        <listener-class>se.scalablesolutions.akka.servlet.Initializer</listener-class>
+        <listener-class>com.vasilrem.kandash.resources.config.SimpleAkkaInitializer</listener-class>
     </listener>
     <servlet-mapping>
         <servlet-name>AkkaServlet</servlet-name>
